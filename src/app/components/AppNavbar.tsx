@@ -4,14 +4,14 @@ import Search from './Search';
 
 function AppNavbar() {
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="sticky" elevation={0}>
-        <Toolbar sx={{ justifyContent: 'space-between', gap: 2 }}>
+    <Box sx={{ flexGrow: 1 }}  >
+      <AppBar position="sticky" elevation={0} sx={{ px: { xs: 1, sm: 2, md: 6 }, height: 64 }}>
+        <Toolbar sx={{ justifyContent: 'space-between', gap: 2, alignItems: 'center', height: 64 }}>
 
           <Typography
             variant='h5'
             color='text.primary'
-            sx={{ fontWeight: 800, cursor: 'pointer', px: { xs: 1, sm: 2, md: 3 } }}
+            sx={{ fontWeight: 800, cursor: 'pointer', pr: { xs: 1, sm: 2, md: 3 } }}
           >
             Mmark
           </Typography>
@@ -30,7 +30,7 @@ function AppNavbar() {
             <Stack
               direction="row"
               spacing={2}
-              sx={{ display: { xs: "none", sm: "flex" }, px: { xs: 1, sm: 2, md: 3 } }}
+              sx={{ display: { xs: "none", sm: "flex" }, pl: { xs: 1, sm: 2, md: 3 } }}
             >
               <IconButton >
                 <Badge badgeContent={4} color="error">

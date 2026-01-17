@@ -11,7 +11,7 @@ function AppNavbar() {
           <Typography
             variant='h5'
             color='text.primary'
-            sx={{ fontWeight: 800, cursor: 'pointer', pr: { xs: 1, sm: 2, md: 3 } }}
+            sx={{ fontWeight: 800, cursor: 'pointer', pr: { xs: 1, sm: 2, md: 3 }, userSelect: 'none' }}
           >
             Mmark
           </Typography>

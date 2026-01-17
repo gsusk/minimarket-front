@@ -4,9 +4,9 @@ import Search from './Search';
 
 function AppNavbar() {
   return (
-    <Box sx={{ flexGrow: 1 }}  >
-      <AppBar position="sticky" elevation={0} sx={{ px: { xs: 1, sm: 2, md: 6 }, height: 64 }}>
-        <Toolbar sx={{ justifyContent: 'space-between', gap: 2, alignItems: 'center', height: 64 }}>
+    <Box sx={{ flexGrow: 1 }} >
+      <AppBar position="sticky" elevation={0} sx={{ px: { xs: 1, sm: 2, md: 6 }, height: "4.5rem", pt: "0.5rem" }}>
+        <Toolbar sx={{ justifyContent: 'space-between', gap: 2, alignItems: 'center', height: "4.5rem" }}>
 
           <Typography
             variant='h5'

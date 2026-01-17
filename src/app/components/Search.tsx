@@ -3,6 +3,7 @@ import { Autocomplete, TextField } from "@mui/material"
 
 function Search() {
   return (
+
     <Autocomplete
       freeSolo
       id="busqueda"
@@ -21,6 +22,10 @@ function Search() {
             input: {
               ...params.InputProps,
               type: 'search',
+              sx: {
+                backgroundColor: "background.default",
+                color: "text.primary"
+              }
             },
           }}
         />

@@ -22,7 +22,7 @@ export default function AppNavbar() {
             color='text.primary'
             sx={{ fontWeight: 800, cursor: 'pointer', pr: { xs: 1, sm: 2, md: 3 }, userSelect: 'none' }}
           >
-            Mmark
+            MMARK
           </Typography>
 
           <Box sx={{

@@ -40,9 +40,7 @@ export default function RootLayout({
           <Providers>
             <Header></Header>
             <SubNavbar></SubNavbar>
-            <Box component="main" sx={{ minHeight: '100vh', pt: { xs: '5rem' } }}>
-              {children}
-            </Box>
+            {children}
           </Providers>
         </AppRouterCacheProvider>
       </body>

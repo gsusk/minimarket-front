@@ -11,7 +11,9 @@ export default function AppNavbar() {
         px: { xs: 1, sm: 2, md: 6 },
         bgcolor: 'background.paper',
         minHeight: "4.5rem",
-        justifyContent: "center"
+        justifyContent: "center",
+        borderBottom: { xs: "1px solid", sm: "5px solid" },
+        borderColor: { xs: "divider", sm: "primary.main" }
       }}>
         <Toolbar sx={{ justifyContent: 'space-between', gap: 2, alignItems: 'center', minHeight: "4.5rem" }}>
 

@@ -10,9 +10,8 @@ export default function AppNavbar() {
       <AppBar position="static" elevation={0} sx={{
         px: { xs: 1, sm: 2, md: 6 },
         bgcolor: 'background.paper',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        minHeight: "4.5rem"
+        minHeight: "4.5rem",
+        justifyContent: "center"
       }}>
         <Toolbar sx={{ justifyContent: 'space-between', gap: 2, alignItems: 'center', minHeight: "4.5rem" }}>
 

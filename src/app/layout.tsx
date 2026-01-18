@@ -5,6 +5,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import Providers from "./providers";
 import Header from "./components/Header";
 import { Box } from "@mui/material";
+import SubNavbar from "./components/SubNavbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <Providers>
             <Header></Header>
+            <SubNavbar></SubNavbar>
             <Box component="main" sx={{ minHeight: '100vh', pt: { xs: '5rem' } }}>
               {children}
             </Box>

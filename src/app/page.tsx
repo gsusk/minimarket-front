@@ -9,14 +9,14 @@ export default function Home() {
       <Container maxWidth="lg" sx={{ pt: 2 }}>
         <HeroSlider />
         <TrustBar />
-        <Box sx={{ mt: 6 }}>
+        <Box sx={{ mt: 8 }}>
           <Stack
             direction="row"
-            justifyContent="space-between"
+            justifyContent={{ xs: "center", sm: "space-between" }}
             alignItems="flex-end"
-            sx={{ mb: 3 }}
+            sx={{ mb: 6 }}
           >
-            <Box>
+            <Box mx={{ xs: "1.9rem" }} textAlign={{ xs: "center", sm: "center", md: "start" }}>
               <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.02em' }}>
                 Ofertas de la Semana
               </Typography>
@@ -24,14 +24,14 @@ export default function Home() {
                 Los mejores precios en tecnología seleccionada.
               </Typography>
             </Box>
-            <Button variant="outlined" sx={{ borderRadius: '10px', fontWeight: 700, textTransform: 'none' }}>
+            <Button variant="outlined" sx={{ display: { xs: "none", sm: "block" }, borderRadius: '10px', fontWeight: 700, textTransform: 'none' }}>
               Ver todo
             </Button>
           </Stack>
 
-          <Grid container spacing={3}>
+          <Grid container spacing={3} justifyContent={"center"}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((id) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={id}>
+              <Grid size={{ xs: 9, sm: 6, md: 4, lg: 3 }} key={id} >
                 <ProductCard id={id} />
               </Grid>
             ))}

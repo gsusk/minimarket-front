@@ -28,7 +28,7 @@ export default function Home() {
               Ver todo
             </Button>
           </Stack>
-
+          {/*TODO: mover a su propio componente!!*/}
           <Grid container spacing={3} justifyContent={"center"}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((id) => (
               <Grid size={{ xs: 9, sm: 6, md: 4, lg: 3 }} key={id} >

@@ -1,7 +1,7 @@
 import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
-import HeroSlider from "../components/HeroSlider";
-import TrustBar from "../components/TrustBar";
-import ProductCard from "../components/ProductCard";
+import HeroSlider from "./components/HeroSlider";
+import TrustBar from "./components/TrustBar";
+import ProductCard from "./components/ProductCard";
 
 export default function Home() {
   return (

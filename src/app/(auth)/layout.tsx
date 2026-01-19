@@ -2,7 +2,7 @@ import { Box, Grid, Typography, Button, Container, keyframes } from '@mui/materi
 import { ArrowBack, RedeemOutlined, StorefrontOutlined } from '@mui/icons-material';
 import Link from 'next/link';
 
-export default function AuthLayout({ children }: {
+export default async function AuthLayout({ children }: {
   children: React.ReactNode;
 }) {
   return (

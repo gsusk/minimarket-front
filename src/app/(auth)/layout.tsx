@@ -1,6 +1,7 @@
 "use server"
 import { Box, Grid, Typography, Button, Container } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
+import Link from 'next/link';
 
 export default async function AuthLayout({ children }: {
   children: React.ReactNode;
@@ -33,12 +34,15 @@ export default async function AuthLayout({ children }: {
       <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center' }}>
         <Container maxWidth="sm">
           <Box component={"div"} sx={{ p: { xs: 2, md: 4 } }}>
-            <Button
-              startIcon={<ArrowBack />}
-              sx={{ mb: 4, textTransform: 'none', color: 'text.secondary' }}
-            >
-              Volver a la tienda
-            </Button>
+
+            <Link href={"/"}>
+              <Button
+                startIcon={<ArrowBack />}
+                sx={{ mb: 4, textTransform: 'none', color: 'text.secondary' }}
+              >
+                Volver a la tienda
+              </Button>
+            </Link>
             {children}
           </Box>
         </Container>

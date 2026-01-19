@@ -1,4 +1,4 @@
-import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link } from '@mui/material';
+import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box } from '@mui/material';
 import { Person, Email, Lock } from '@mui/icons-material';
 
 export default function RegisterPage() {
@@ -45,23 +45,22 @@ export default function RegisterPage() {
             input: { startAdornment: <InputAdornment position="start"><Lock fontSize="small" /></InputAdornment> }
           }}
         />
-
-        <Button
-          variant="contained"
-          fullWidth
-          size="large"
-          sx={{ py: 1.8, borderRadius: '12px', fontWeight: 800 }}
-        >
-          Registrarme ahora
-        </Button>
-
+        <Box p={1} justifyContent={"center"} width={"100%"} display={"flex"}>
+          <Button
+            variant="contained"
+            size='medium'
+            sx={{ py: 1.8, borderRadius: '12px', fontWeight: 800, }}
+          >
+            Registrarme ahora
+          </Button>
+        </Box>
         <Typography variant="body2" textAlign="center" color="text.secondary">
           ¿Ya tienes una cuenta? {' '}
           <Link href="/login" sx={{ fontWeight: 700, textDecoration: 'none', color: 'primary.main' }}>
             Inicia sesión
           </Link>
         </Typography>
-      </Stack>
+      </Stack >
     </>
   );
 }

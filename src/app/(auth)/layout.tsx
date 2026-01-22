@@ -42,7 +42,7 @@ export default async function AuthLayout({ children }: {
       </Grid>
 
       <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', pt: { xs: "5rem" } }}>
-        <Container maxWidth="sm">
+        <Container maxWidth="sm" component={"div"} sx={{ display: "flex", justifyContent: "center" }}>
           <Box component={"div"} sx={{ p: { xs: 2, md: 4 } }}>
 
             <Link href={"/"}>

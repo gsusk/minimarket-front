@@ -3,6 +3,7 @@ import { Typography, Stack, TextField, InputAdornment, Button, Link, Box } from 
 import { Email, Lock } from '@mui/icons-material';
 import * as Yup from "yup"
 import { useFormik } from 'formik';
+import api from '@/app/api/api';
 
 const SiginSchema = Yup.object().shape({
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
@@ -16,8 +17,17 @@ export default function LoginPage() {
       password: '',
     },
     validationSchema: SiginSchema,
-    onSubmit: (values) => {
-      console.log(values)
+    onSubmit: async (values) => {
+      await api.post("/auth/login", values).then((d) => console.log("success: ", d)).catch((err) => {
+        if (!err.response.data.errors) {
+          return console.log(err.response.data)
+        }
+        const fields = err.response.data.errors.reduce((acc, err) => {
+          acc[err.field] = err.detail
+          return acc
+        }, {})
+        formik.setErrors(fields)
+      })
     },
   })
   return (
@@ -81,4 +91,8 @@ export default function LoginPage() {
       </Box>
     </>
   );
+}
+
+function setError(title: any): any {
+  throw new Error('Function not implemented.');
 }

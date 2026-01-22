@@ -18,6 +18,11 @@ const api = axios.create({
 
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
+const AUTH_ENDPOINTS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh"
+]
 
 const proccessQueue = (err: any, token: string | null) => {
   failedQueue.forEach((item) => {
@@ -50,7 +55,7 @@ api.interceptors.response.use((response) => {
 }, async (err: AxiosError & { config: CustomAxiosRequestConfig }) => {
   const originalRequest = err.config as CustomAxiosRequestConfig
 
-  if (err.response?.status !== 401 || originalRequest._retry) {
+  if (err.response?.status !== 401 || !AUTH_ENDPOINTS.some(p => originalRequest.url?.includes(p)) || originalRequest._retry) {
     return Promise.reject(err);
   }
 

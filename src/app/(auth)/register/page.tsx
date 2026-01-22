@@ -3,6 +3,8 @@ import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box }
 import { Person, Email, Lock } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from "yup"
+import api from '@/app/api/api';
+import { useState } from 'react';
 
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
@@ -20,8 +22,17 @@ export default function RegisterPage() {
       password: '',
     },
     validationSchema: SignupSchema,
-    onSubmit: (values) => {
-      console.log(values)
+    onSubmit: async (values) => {
+      await api.post("/auth/register", values).then((d) => console.log("success: ", d)).catch((err) => {
+        if (!err.response.data.errors) {
+          return setError(err.response.data.title)
+        }
+        const fields = err.response.data.errors.reduce((acc, err) => {
+          acc[err.field] = err.detail
+          return acc
+        }, {})
+        formik.setErrors(fields)
+      })
     },
   })
 

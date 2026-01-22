@@ -1,18 +1,30 @@
 "use client"
-import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box, FormControl, FormHelperText, Input, InputLabel } from '@mui/material';
+import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box } from '@mui/material';
 import { Person, Email, Lock } from '@mui/icons-material';
-import { useState } from 'react';
+import { useFormik } from 'formik';
 import * as Yup from "yup"
 
 const SignupSchema = Yup.object().shape({
-  fistName: Yup.string().min(2, "Need to be at least 2 characters").required("First name is required."),
-  lastName: Yup.string().min(2, "Need to be at least 2 characters").required("Last name is required"),
-  email: Yup.string().email("Needs to be a valid email").required("Email is required."),
-  password: Yup.string().min(6, "Password needs to be at least 6 characters").max(1024, "Too long").required("Passoword is required"),
+  firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
+  lastName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("Last name is required"),
+  email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
+  password: Yup.string().trim().min(6, "Password needs to be at least 6 characters").max(1024, "Too long").required("Passoword is required"),
 })
 
 export default function RegisterPage() {
-  useState
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+    },
+    validationSchema: SignupSchema,
+    onSubmit: (values) => {
+      console.log(values)
+    },
+  })
+
   return (
     <>
       <Typography variant="h4" fontWeight={900} gutterBottom>
@@ -22,36 +34,68 @@ export default function RegisterPage() {
         Completa tus datos para empezar tu experiencia.
       </Typography>
 
-      <Stack component={"form"} spacing={3} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }}>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 6 }} pb={1}>
+      <Stack component={"form"} spacing={5} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit}>
+        <Grid container spacing={{ xs: 5, md: 2 }}>
+          <Grid size={{ xs: 12, md: 6 }} >
             <TextField
+              id='firstName'
+              name='firstName'
               fullWidth
               label="Nombre"
-              placeholder="Ej. Carlos"
+              placeholder="Carlos..."
+              error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+              helperText={formik.touched.firstName && formik.errors.firstName}
+              value={formik.values.firstName}
+              onChange={formik.handleChange}
               slotProps={{
                 input: { startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> }
               }}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField fullWidth label="Apellido" placeholder="Ej. Ortiz" />
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField
+              id='lastName'
+              name='lastName'
+              fullWidth
+              label="Apellido"
+              placeholder="Ortiz..."
+              error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+              helperText={formik.touched.lastName && formik.errors.lastName}
+              value={formik.values.lastName}
+              onChange={formik.handleChange}
+              slotProps={{
+                input: { startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> }
+              }} />
           </Grid>
         </Grid>
 
         <TextField
           fullWidth
+          name='email'
+          id='email'
           label="Correo Electrónico"
           type="email"
+          placeholder='ejemplo@email.com'
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
+          value={formik.values.email}
+          onChange={formik.handleChange}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Email fontSize="small" /></InputAdornment> }
           }}
+
         />
 
         <TextField
           fullWidth
+          name='password'
+          id='password'
           label="Contraseña"
           type="password"
+          error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && formik.errors.password}
+          value={formik.values.password}
+          onChange={formik.handleChange}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Lock fontSize="small" /></InputAdornment> }
           }}

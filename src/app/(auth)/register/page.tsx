@@ -34,7 +34,7 @@ export default function RegisterPage() {
         Completa tus datos para empezar tu experiencia.
       </Typography>
 
-      <Stack component={"form"} spacing={5} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit}>
+      <Stack component={"form"} spacing={4} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit}>
         <Grid container spacing={{ xs: 5, md: 2 }}>
           <Grid size={{ xs: 12, md: 6 }} >
             <TextField
@@ -44,7 +44,7 @@ export default function RegisterPage() {
               label="Nombre"
               placeholder="Carlos..."
               error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-              helperText={formik.touched.firstName && formik.errors.firstName}
+              helperText={formik.touched.firstName && formik.errors.firstName ? formik.errors.firstName : ' '}
               value={formik.values.firstName}
               onChange={formik.handleChange}
               slotProps={{
@@ -60,7 +60,7 @@ export default function RegisterPage() {
               label="Apellido"
               placeholder="Ortiz..."
               error={formik.touched.lastName && Boolean(formik.errors.lastName)}
-              helperText={formik.touched.lastName && formik.errors.lastName}
+              helperText={formik.touched.lastName && formik.errors.lastName ? formik.errors.lastName : ' '}
               value={formik.values.lastName}
               onChange={formik.handleChange}
               slotProps={{
@@ -77,7 +77,7 @@ export default function RegisterPage() {
           type="email"
           placeholder='ejemplo@email.com'
           error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
+          helperText={formik.touched.email && formik.errors.email ? formik.errors.email : ' '}
           value={formik.values.email}
           onChange={formik.handleChange}
           slotProps={{
@@ -93,14 +93,14 @@ export default function RegisterPage() {
           label="Contraseña"
           type="password"
           error={formik.touched.password && Boolean(formik.errors.password)}
-          helperText={formik.touched.password && formik.errors.password}
+          helperText={formik.touched.password && formik.errors.password ? formik.errors.password : ' '}
           value={formik.values.password}
           onChange={formik.handleChange}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start"><Lock fontSize="small" /></InputAdornment> }
           }}
         />
-        <Box p={1} justifyContent={"center"} width={"100%"} display={"flex"} pt={4}>
+        <Box p={1} justifyContent={"center"} width={"100%"} display={"flex"} pt={3}>
           <Button
             variant="contained"
             size='medium'
@@ -110,7 +110,7 @@ export default function RegisterPage() {
             Registrarme ahora
           </Button>
         </Box>
-        <Typography variant="body2" textAlign="center" color="text.secondary" py={4}>
+        <Typography variant="body2" textAlign="center" color="text.secondary">
           ¿Ya tienes una cuenta? {' '}
           <Link href="/login" sx={{ fontWeight: 700, textDecoration: 'none', color: 'primary.main' }}>
             Inicia sesión

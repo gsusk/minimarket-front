@@ -5,8 +5,6 @@ import * as Yup from "yup"
 import { useFormik } from 'formik';
 
 const SiginSchema = Yup.object().shape({
-  firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
-  lastName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("Last name is required"),
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
   password: Yup.string().trim().min(6, "Password needs to be at least 6 characters").max(1024, "Too long").required("Passoword is required"),
 }).required()

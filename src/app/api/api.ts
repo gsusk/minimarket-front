@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig, CreateAxiosDefaults } from "axios";
 
-// Extend AxiosRequestConfig to include custom _retry property
 interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }

@@ -3,7 +3,7 @@ import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box }
 import { Person, Email, Lock } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from "yup"
-import { register } from '../actions/auth';
+import { register } from '../../api/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';

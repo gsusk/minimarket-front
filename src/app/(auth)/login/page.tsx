@@ -3,10 +3,10 @@ import { Typography, Stack, TextField, InputAdornment, Button, Link, Box } from 
 import { Email, Lock } from '@mui/icons-material';
 import * as Yup from "yup"
 import { useFormik } from 'formik';
-import { login } from '../actions/auth';
+import { login } from '../../api/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppError, ValidationError } from '../../utils/errors';
 
 const SiginSchema = Yup.object().shape({
@@ -22,6 +22,7 @@ export default function LoginPage() {
     mutationFn: login,
     onSuccess: (data) => {
       localStorage.setItem('access_token', data.accessToken);
+      useQueryClient().invalidateQueries({ queryKey: ["me"] })
       router.push('/dashboard');
     },
     onError: (error: AppError) => {

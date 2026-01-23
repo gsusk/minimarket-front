@@ -135,7 +135,7 @@ export default function RegisterPage() {
             disabled={isPending}
             sx={{ py: 1.8, borderRadius: '12px', fontWeight: 800, }}
           >
-            {isPending ? "Registrando..." : "Registrarme ahora"}
+            Registrarme ahora
           </Button>
         </Box>
         <Typography variant="body2" textAlign="center" color="text.secondary" pb={4}>

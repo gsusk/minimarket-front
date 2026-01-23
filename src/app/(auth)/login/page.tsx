@@ -95,7 +95,7 @@ export default function LoginPage() {
               disabled={isPending}
               sx={{ py: 1.8, borderRadius: '12px', fontWeight: 800 }}
             >
-              {isPending ? "Iniciando..." : "Iniciar Sesión"}
+              Iniciar Sesión
             </Button>
           </Box>
 

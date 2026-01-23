@@ -3,7 +3,11 @@ import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box }
 import { Person, Email, Lock } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from "yup"
-import api from '@/app/api/api';
+import { AuthCredentials, register } from '../actions/auth';
+import { useMutation } from '@tanstack/react-query';
+import router from 'next/router';
+import { ApiErrorResponse, handleApiError, ValidationError } from '../utils/errors';
+import { AxiosError } from 'axios';
 import { useState } from 'react';
 
 const SignupSchema = Yup.object().shape({
@@ -14,6 +18,8 @@ const SignupSchema = Yup.object().shape({
 })
 
 export default function RegisterPage() {
+  const [generalError, setGeneralError] = useState<string | null>(null)
+
   const formik = useFormik({
     initialValues: {
       firstName: '',
@@ -22,19 +28,27 @@ export default function RegisterPage() {
       password: '',
     },
     validationSchema: SignupSchema,
-    onSubmit: async (values) => {
-      await api.post("/auth/register", values).then((d) => console.log("success: ", d)).catch((err) => {
-        if (!err.response.data.errors) {
-          return setError(err.response.data.title)
-        }
-        const fields = err.response.data.errors.reduce((acc, err) => {
-          acc[err.field] = err.detail
-          return acc
-        }, {})
-        formik.setErrors(fields)
-      })
-    },
+    onSubmit: (values) => handleSubmit(values),
   })
+
+  const handleSubmit = async (credentials: AuthCredentials) => {
+    try {
+      const data = await register(credentials)
+      localStorage.set('access_token', data.accessToken);
+      router.push('/dashboard');
+    } catch (error: any) {
+      const formikErrors: Record<string, string> = {};
+      const data = handleApiError(error)
+      if (data.isValidation) {
+        data.validationErrors?.forEach((v) => {
+          formikErrors[v.field] = v.message;
+        });
+        formik.setErrors(formikErrors);
+      } else {
+        setGeneralError(error.message)
+      }
+    }
+  }
 
   return (
     <>
@@ -45,8 +59,8 @@ export default function RegisterPage() {
         Completa tus datos para empezar tu experiencia.
       </Typography>
 
-      <Stack component={"form"} spacing={4} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit}>
-        <Grid container spacing={{ xs: 5, md: 2 }}>
+      <Stack component={"form"} spacing={3} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit} onChange={() => setGeneralError(null)}>
+        <Grid container spacing={{ xs: 3, md: 2 }}>
           <Grid size={{ xs: 12, md: 6 }} >
             <TextField
               id='firstName'
@@ -111,7 +125,8 @@ export default function RegisterPage() {
             input: { startAdornment: <InputAdornment position="start"><Lock fontSize="small" /></InputAdornment> }
           }}
         />
-        <Box p={1} justifyContent={"center"} width={"100%"} display={"flex"} pt={3}>
+        <Box sx={{ color: "error.main" }} component={"div"} visibility={generalError ? "visible" : "hidden"}>{generalError || "*"}</Box>
+        < Box pb={2} justifyContent={"center"} width={"100%"} display={"flex"} pt={2}>
           <Button
             variant="contained"
             size='medium'
@@ -121,7 +136,7 @@ export default function RegisterPage() {
             Registrarme ahora
           </Button>
         </Box>
-        <Typography variant="body2" textAlign="center" color="text.secondary">
+        <Typography variant="body2" textAlign="center" color="text.secondary" pb={4}>
           ¿Ya tienes una cuenta? {' '}
           <Link href="/login" sx={{ fontWeight: 700, textDecoration: 'none', color: 'primary.main' }}>
             Inicia sesión

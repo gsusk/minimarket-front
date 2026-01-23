@@ -3,10 +3,11 @@ import { Typography, Stack, Grid, TextField, InputAdornment, Button, Link, Box }
 import { Person, Email, Lock } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from "yup"
-import { AuthCredentials, register } from '../actions/auth';
-import router from 'next/router';
+import { register } from '../actions/auth';
+import { useRouter } from 'next/navigation';
 import { handleApiError } from '../utils/errors';
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
@@ -17,24 +18,15 @@ const SignupSchema = Yup.object().shape({
 
 export default function RegisterPage() {
   const [generalError, setGeneralError] = useState<string | null>(null)
+  const router = useRouter();
 
-  const formik = useFormik({
-    initialValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-    },
-    validationSchema: SignupSchema,
-    onSubmit: (values) => handleSubmit(values),
-  })
-
-  const handleSubmit = async (credentials: AuthCredentials) => {
-    try {
-      const data = await register(credentials)
-      localStorage.set('access_token', data.accessToken);
+  const { mutate, isPending } = useMutation({
+    mutationFn: register,
+    onSuccess: (data) => {
+      localStorage.setItem('access_token', data.accessToken);
       router.push('/dashboard');
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       const formikErrors: Record<string, string> = {};
       const data = handleApiError(error)
       if (data.isValidation) {
@@ -46,7 +38,18 @@ export default function RegisterPage() {
         setGeneralError(error.message)
       }
     }
-  }
+  })
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+    },
+    validationSchema: SignupSchema,
+    onSubmit: (values) => mutate(values),
+  })
 
   return (
     <>
@@ -129,9 +132,10 @@ export default function RegisterPage() {
             variant="contained"
             size='medium'
             type='submit'
+            disabled={isPending}
             sx={{ py: 1.8, borderRadius: '12px', fontWeight: 800, }}
           >
-            Registrarme ahora
+            {isPending ? "Registrando..." : "Registrarme ahora"}
           </Button>
         </Box>
         <Typography variant="body2" textAlign="center" color="text.secondary" pb={4}>

@@ -3,10 +3,11 @@ import { Typography, Stack, TextField, InputAdornment, Button, Link, Box } from 
 import { Email, Lock } from '@mui/icons-material';
 import * as Yup from "yup"
 import { useFormik } from 'formik';
-import { AuthCredentials, login } from '../actions/auth';
-import router from 'next/router';
+import { login } from '../actions/auth';
+import { useRouter } from 'next/navigation';
 import { handleApiError } from '../utils/errors';
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 const SiginSchema = Yup.object().shape({
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
@@ -15,22 +16,15 @@ const SiginSchema = Yup.object().shape({
 
 export default function LoginPage() {
   const [generalError, setGeneralError] = useState<string | null>()
+  const router = useRouter();
 
-  const formik = useFormik({
-    initialValues: {
-      email: '',
-      password: '',
-    },
-    validationSchema: SiginSchema,
-    onSubmit: (values) => handleSubmit(values)
-  })
-
-  const handleSubmit = async (credentials: Pick<AuthCredentials, "email" | "password">) => {
-    try {
-      const data = await login(credentials)
-      localStorage.set('access_token', data.accessToken);
+  const { mutate, isPending } = useMutation({
+    mutationFn: login,
+    onSuccess: (data) => {
+      localStorage.setItem('access_token', data.accessToken);
       router.push('/dashboard');
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       const formikErrors: Record<string, string> = {};
       const data = handleApiError(error)
       if (data.isValidation) {
@@ -42,7 +36,17 @@ export default function LoginPage() {
         setGeneralError(error.message)
       }
     }
-  }
+  })
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema: SiginSchema,
+    onSubmit: (values) => mutate(values)
+  })
+
   return (
     <>
       <Box width={{ xs: "370px", sm: "400px", md: "450px" }}>
@@ -88,9 +92,10 @@ export default function LoginPage() {
               variant="contained"
               size="large"
               type='submit'
+              disabled={isPending}
               sx={{ py: 1.8, borderRadius: '12px', fontWeight: 800 }}
             >
-              Iniciar Sesión
+              {isPending ? "Iniciando..." : "Iniciar Sesión"}
             </Button>
           </Box>
 

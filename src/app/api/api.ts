@@ -54,8 +54,7 @@ api.interceptors.response.use((response) => {
   return response;
 }, async (err: AxiosError & { config: CustomAxiosRequestConfig }) => {
   const originalRequest = err.config as CustomAxiosRequestConfig
-
-  if (err.response?.status !== 401 || !AUTH_ENDPOINTS.some(p => originalRequest.url?.includes(p)) || originalRequest._retry) {
+  if (err.response?.status !== 401 || AUTH_ENDPOINTS.some(p => originalRequest.url?.includes(p)) || originalRequest._retry) {
     return Promise.reject(normalizeError(err));
   }
 

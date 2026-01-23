@@ -4,10 +4,8 @@ import { Person, Email, Lock } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from "yup"
 import { AuthCredentials, register } from '../actions/auth';
-import { useMutation } from '@tanstack/react-query';
 import router from 'next/router';
-import { ApiErrorResponse, handleApiError, ValidationError } from '../utils/errors';
-import { AxiosError } from 'axios';
+import { handleApiError } from '../utils/errors';
 import { useState } from 'react';
 
 const SignupSchema = Yup.object().shape({

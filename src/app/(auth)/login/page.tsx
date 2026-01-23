@@ -3,7 +3,10 @@ import { Typography, Stack, TextField, InputAdornment, Button, Link, Box } from 
 import { Email, Lock } from '@mui/icons-material';
 import * as Yup from "yup"
 import { useFormik } from 'formik';
-import api from '@/app/api/api';
+import { AuthCredentials, login } from '../actions/auth';
+import router from 'next/router';
+import { handleApiError } from '../utils/errors';
+import { useState } from 'react';
 
 const SiginSchema = Yup.object().shape({
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
@@ -11,25 +14,35 @@ const SiginSchema = Yup.object().shape({
 }).required()
 
 export default function LoginPage() {
+  const [generalError, setGeneralError] = useState<string | null>()
+
   const formik = useFormik({
     initialValues: {
       email: '',
       password: '',
     },
     validationSchema: SiginSchema,
-    onSubmit: async (values) => {
-      await api.post("/auth/login", values).then((d) => console.log("success: ", d)).catch((err) => {
-        if (!err.response.data.errors) {
-          return console.log(err.response.data)
-        }
-        const fields = err.response.data.errors.reduce((acc, err) => {
-          acc[err.field] = err.detail
-          return acc
-        }, {})
-        formik.setErrors(fields)
-      })
-    },
+    onSubmit: (values) => handleSubmit(values)
   })
+
+  const handleSubmit = async (credentials: Pick<AuthCredentials, "email" | "password">) => {
+    try {
+      const data = await login(credentials)
+      localStorage.set('access_token', data.accessToken);
+      router.push('/dashboard');
+    } catch (error: any) {
+      const formikErrors: Record<string, string> = {};
+      const data = handleApiError(error)
+      if (data.isValidation) {
+        data.validationErrors?.forEach((v) => {
+          formikErrors[v.field] = v.message;
+        });
+        formik.setErrors(formikErrors);
+      } else {
+        setGeneralError(error.message)
+      }
+    }
+  }
   return (
     <>
       <Box width={{ xs: "370px", sm: "400px", md: "450px" }}>
@@ -40,7 +53,7 @@ export default function LoginPage() {
           Ingresa tus credenciales para acceder.
         </Typography>
 
-        <Stack spacing={4} component={"form"} onSubmit={formik.handleSubmit} >
+        <Stack spacing={4} component={"form"} onSubmit={formik.handleSubmit} onChange={() => { if (generalError != null) setGeneralError(null) }} >
           <TextField
             fullWidth
             id='email'
@@ -69,7 +82,7 @@ export default function LoginPage() {
               input: { startAdornment: <InputAdornment position="start"><Lock fontSize="small" /></InputAdornment> }
             }}
           />
-
+          <Box sx={{ color: "error.main" }} component={"div"} visibility={generalError ? "visible" : "hidden"}>{generalError || "*"}</Box>
           <Box p={1} justifyContent={"center"} width={"100%"} display={"flex"} pt={3}>
             <Button
               variant="contained"
@@ -91,8 +104,4 @@ export default function LoginPage() {
       </Box>
     </>
   );
-}
-
-function setError(title: any): any {
-  throw new Error('Function not implemented.');
 }

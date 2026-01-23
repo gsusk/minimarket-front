@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig, CreateAxiosDefaults } from "axios";
+import { normalizeError } from "../utils/errors";
 
 interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -46,8 +47,7 @@ api.interceptors.request.use((config) => {
 
   return config
 }, (err) => {
-
-  return Promise.reject(err)
+  return Promise.reject(normalizeError(err))
 })
 
 api.interceptors.response.use((response) => {
@@ -56,7 +56,7 @@ api.interceptors.response.use((response) => {
   const originalRequest = err.config as CustomAxiosRequestConfig
 
   if (err.response?.status !== 401 || !AUTH_ENDPOINTS.some(p => originalRequest.url?.includes(p)) || originalRequest._retry) {
-    return Promise.reject(err);
+    return Promise.reject(normalizeError(err));
   }
 
   if (isRefreshing) {
@@ -68,7 +68,7 @@ api.interceptors.response.use((response) => {
         return api(originalRequest);
       })
       .catch((err) => {
-        return Promise.reject(err);
+        return Promise.reject(normalizeError(err));
       })
   }
 
@@ -90,7 +90,7 @@ api.interceptors.response.use((response) => {
   } catch (err) {
     localStorage.removeItem("access_token")
     proccessQueue(err, null)
-    return Promise.reject(err);
+    return Promise.reject(normalizeError(err));
   } finally {
     isRefreshing = false
   }

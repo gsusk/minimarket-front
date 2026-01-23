@@ -5,9 +5,9 @@ import { useFormik } from 'formik';
 import * as Yup from "yup"
 import { register } from '../actions/auth';
 import { useRouter } from 'next/navigation';
-import { handleApiError } from '../utils/errors';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { AppError, ValidationError } from '@/app/utils/errors';
 
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
@@ -26,16 +26,16 @@ export default function RegisterPage() {
       localStorage.setItem('access_token', data.accessToken);
       router.push('/dashboard');
     },
-    onError: (error: any) => {
+    onError: (error: AppError) => {
       const formikErrors: Record<string, string> = {};
-      const data = handleApiError(error)
-      if (data.isValidation) {
-        data.validationErrors?.forEach((v) => {
-          formikErrors[v.field] = v.message;
+
+      if (error instanceof ValidationError) {
+        error.issues.forEach((issue) => {
+          formikErrors[issue.field] = issue.message;
         });
         formik.setErrors(formikErrors);
       } else {
-        setGeneralError(error.message)
+        setGeneralError(error.message);
       }
     }
   })

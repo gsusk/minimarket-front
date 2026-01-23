@@ -3,11 +3,11 @@ import { Typography, Stack, TextField, InputAdornment, Button, Link, Box } from 
 import { Email, Lock } from '@mui/icons-material';
 import * as Yup from "yup"
 import { useFormik } from 'formik';
-import { login } from '../actions/auth';
+import { AuthCredentials, login } from '../actions/auth';
 import { useRouter } from 'next/navigation';
-import { handleApiError } from '../utils/errors';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { AppError, ValidationError } from '../../utils/errors';
 
 const SiginSchema = Yup.object().shape({
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
@@ -24,16 +24,16 @@ export default function LoginPage() {
       localStorage.setItem('access_token', data.accessToken);
       router.push('/dashboard');
     },
-    onError: (error: any) => {
+    onError: (error: AppError) => {
       const formikErrors: Record<string, string> = {};
-      const data = handleApiError(error)
-      if (data.isValidation) {
-        data.validationErrors?.forEach((v) => {
-          formikErrors[v.field] = v.message;
+
+      if (error instanceof ValidationError) {
+        error.issues.forEach((issue) => {
+          formikErrors[issue.field] = issue.message;
         });
         formik.setErrors(formikErrors);
       } else {
-        setGeneralError(error.message)
+        setGeneralError(error.message);
       }
     }
   })

@@ -1,4 +1,5 @@
 import api from "@/app/api/api"
+import { useQuery } from "@tanstack/react-query"
 
 export type BasicUser = {
   id: number,
@@ -17,6 +18,10 @@ export type UserProfile = {
 }
 
 export async function userMe() {
-  const response = await api.get<BasicUser>("/auth/login")
+  const response = await api.get<BasicUser>("/user/me")
   return response.data
+}
+
+export default function useMe() {
+  return useQuery({ queryKey: ["me"], queryFn: userMe, staleTime: 30_000 })
 }

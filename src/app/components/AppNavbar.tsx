@@ -1,9 +1,13 @@
 "use client"
-import { AppBar, Toolbar, Typography, Stack, IconButton, Box, Badge, useScrollTrigger, Divider } from '@mui/material';
-import { Notifications, ShoppingCartOutlined, AccountCircle, Menu as MenuIcon } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, Stack, IconButton, Box, Badge, Tooltip, Skeleton, Icon, } from '@mui/material';
+import { Notifications, ShoppingCartOutlined, Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
+import LoginIcon from '@mui/icons-material/Login';
 import Search from './Search';
+import useMe from '../api/user';
+import Link from 'next/link';
 
 export default function AppNavbar() {
+  const { data, isLoading } = useMe()
 
   return (
     <Box sx={{ flexGrow: 1 }} >
@@ -41,21 +45,34 @@ export default function AppNavbar() {
               spacing={2}
               sx={{ display: { xs: "none", md: "flex" }, pl: { xs: 1, sm: 2, md: 3 } }}
             >
-              <IconButton >
-                <Badge badgeContent={4} color="error">
-                  <Notifications />
-                </Badge>
-              </IconButton>
+              <Stack direction="row" spacing={1} >
+                <IconButton>
+                  <Badge badgeContent={2} color="error">
+                    <ShoppingCartOutlined />
+                  </Badge>
+                </IconButton>
 
-              <IconButton >
-                <Badge badgeContent={2} color="error">
-                  <ShoppingCartOutlined />
-                </Badge>
-              </IconButton>
+                <IconButton>
+                  <Badge badgeContent={4} color="error">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
 
-              <IconButton >
-                <AccountCircle />
-              </IconButton>
+                {
+                  isLoading ? <Skeleton animation="wave" width={40} height={40} variant="circular"></Skeleton> :
+                    data ?
+                      <Tooltip title="INGRESAR" followCursor>
+                        <IconButton component={Link} href="/profile">
+                          <AccountCircle />
+                        </IconButton>
+                      </Tooltip> :
+                      <Tooltip title="INGRESAR" followCursor>
+                        <IconButton component={Link} href="/login">
+                          <LoginIcon />
+                        </IconButton>
+                      </Tooltip>
+                }
+              </Stack>
             </Stack>
 
             <IconButton

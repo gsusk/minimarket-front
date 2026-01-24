@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppError, ValidationError } from '../../utils/errors';
+import { userMe } from '@/app/api/user';
 
 const SiginSchema = Yup.object().shape({
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
@@ -16,14 +17,16 @@ const SiginSchema = Yup.object().shape({
 
 export default function LoginPage() {
   const [generalError, setGeneralError] = useState<string | null>()
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const { mutate, isPending } = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
       localStorage.setItem('access_token', data.accessToken);
-      useQueryClient().invalidateQueries({ queryKey: ["me"] })
-      router.push('/dashboard');
+      queryClient.clear()
+      queryClient.prefetchQuery({ queryKey: ["me"], queryFn: userMe });
+      router.replace('/');
     },
     onError: (error: AppError) => {
       const formikErrors: Record<string, string> = {};

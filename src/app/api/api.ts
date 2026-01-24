@@ -88,6 +88,7 @@ api.interceptors.response.use((response) => {
 
     proccessQueue(null, accessToken)
   } catch (err) {
+    console.log("refresh failed:", err);
     localStorage.removeItem("access_token")
     proccessQueue(err, null)
     return Promise.reject(normalizeError(err));

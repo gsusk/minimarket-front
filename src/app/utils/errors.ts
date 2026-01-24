@@ -41,6 +41,7 @@ export class AuthError extends AppError {
 }
 
 export const normalizeError = (error: unknown): AppError => {
+  console.log(error);
   if (error instanceof AppError) {
     return error;
   }

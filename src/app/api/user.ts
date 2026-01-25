@@ -23,5 +23,5 @@ export async function userMe() {
 }
 
 export default function useMe() {
-  return useQuery({ queryKey: ["me"], queryFn: userMe, staleTime: 30_000 })
+  return useQuery({ queryKey: ["me"], queryFn: userMe, staleTime: 30_000, retry: false })
 }

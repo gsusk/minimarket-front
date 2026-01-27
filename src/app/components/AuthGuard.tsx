@@ -2,7 +2,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import useMe from "../api/user"
-import { Box, CircularProgress } from "@mui/material"
+import { Box, CircularProgress, Container } from "@mui/material"
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading, isError, error } = useMe()
@@ -22,12 +22,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (isError) {
-    return <Box>{error.name + ": " + " " + error.message}</Box>
-  }
-
   if (!user) {
-    return null
+    return <Container maxWidth="lg" sx={{ minHeight: "100vh" }}></Container>
   }
 
   return <>{children}</>

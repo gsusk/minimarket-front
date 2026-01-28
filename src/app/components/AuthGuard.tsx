@@ -9,6 +9,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
+    if (isError) {
+      console.log("error: ", error.message);
+    }
     if (!isLoading && (isError || !user)) {
       router.push("/login")
     }

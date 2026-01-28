@@ -22,9 +22,9 @@ export default function LoginPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: login,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       localStorage.setItem('access_token', data.accessToken);
-      queryClient.clear()
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.prefetchQuery({ queryKey: ["me"], queryFn: userMe });
       router.replace('/');
     },

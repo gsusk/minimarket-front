@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppError, ValidationError } from '@/app/utils/errors';
-import { userMe } from '@/app/api/user';
+import useMe, { userMe } from '@/app/api/user';
 
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
@@ -24,9 +24,9 @@ export default function RegisterPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: register,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       localStorage.setItem('access_token', data.accessToken);
-      queryClient.clear()
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.prefetchQuery({ queryKey: ["me"], queryFn: userMe });
       router.replace('/');
     },

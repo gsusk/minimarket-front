@@ -1,5 +1,5 @@
-import { Box, Grid, Typography, Button, Container, keyframes } from '@mui/material';
-import { ArrowBack, RedeemOutlined, StorefrontOutlined } from '@mui/icons-material';
+import { Box, Grid, Typography, Button, Container } from '@mui/material';
+import { ArrowBack, RedeemOutlined } from '@mui/icons-material';
 import Link from 'next/link';
 
 export default async function AuthLayout({ children }: {

@@ -61,7 +61,7 @@ export default function AppNavbar() {
                 {
                   isLoading ? <Skeleton animation="wave" width={40} height={40} variant="circular"></Skeleton> :
                     data ?
-                      <Tooltip title="INGRESAR" followCursor>
+                      <Tooltip title="PROFILE" followCursor>
                         <IconButton component={Link} href="/profile">
                           <AccountCircle />
                         </IconButton>

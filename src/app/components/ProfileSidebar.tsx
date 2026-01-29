@@ -66,7 +66,7 @@ export default function ProfileSidebar() {
           position: 'absolute',
           bottom: 0,
           right: '50%',
-          transform: 'translateX(350%)', // Approximate positioning
+          transform: 'translateX(350%)',
           bgcolor: 'success.main',
           width: 24,
           height: 24,

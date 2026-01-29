@@ -21,12 +21,10 @@ import { useQueryClient } from '@tanstack/react-query'
 export default function ProfilePage() {
   const { data: user, isLoading } = useMe()
   const router = useRouter()
-  const queryClient = useQueryClient()
   const theme = useTheme()
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token")
-    queryClient.removeQueries()
+    //implementar logout
     router.replace("/login")
   }
 

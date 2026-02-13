@@ -38,11 +38,13 @@ const proccessQueue = (err: any, token: string | null) => {
 }
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token")
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem("access_token")
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token.trim()}`
-    config.withCredentials = true
+    if (token) {
+      config.headers.Authorization = `Bearer ${token.trim()}`
+      config.withCredentials = true
+    }
   }
 
   return config

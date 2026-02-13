@@ -1,8 +1,9 @@
 import { Card, CardContent, Typography, Box, IconButton, Stack } from "@mui/material";
 import { AddShoppingCartOutlined, FavoriteBorder } from "@mui/icons-material";
 import Image from "next/image";
+import { Product } from "../api/products";
 
-export default function ProductCard({ id }: { id: number }) {
+export default function ProductCard({ product }: { product: Product }) {
   return (
     <Card
       elevation={0}
@@ -28,8 +29,8 @@ export default function ProductCard({ id }: { id: number }) {
         </IconButton>
 
         <Image
-          src={`/product-${id}.webp`}
-          alt="Producto Mmark"
+          src={(product?.images && product.images.length > 0) ? product.images[0] : '/placeholder.png'}
+          alt={product?.name || "card picture"}
           fill
           style={{
             objectFit: 'contain',
@@ -41,7 +42,7 @@ export default function ProductCard({ id }: { id: number }) {
 
       <CardContent sx={{ pt: 2, px: 1 }}>
         <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, textTransform: 'uppercase' }}>
-          Tecnología
+          {product?.category}
         </Typography>
         <Typography
           variant="body1"
@@ -56,16 +57,13 @@ export default function ProductCard({ id }: { id: number }) {
             mt: 0.5
           }}
         >
-          Nombre del Producto de Ejemplo #{id}
+          {product?.name}
         </Typography>
 
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
-              $1.299.900
-            </Typography>
-            <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.disabled' }}>
-              $1.500.000
+              ${product?.price.toLocaleString()}
             </Typography>
           </Box>
           <IconButton

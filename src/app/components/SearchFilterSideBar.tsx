@@ -44,7 +44,7 @@ export default function SearchFilterSideBar({
   };
 
   const isActiveFilter = (key: string, value: string): boolean => {
-    return searchParams[key].toLowerCase() === value.toLowerCase();
+    return searchParams[key]?.toLowerCase() === value?.toLowerCase();
   };
 
   const renderFacet = (title: string, key: string) => {

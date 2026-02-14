@@ -1,6 +1,6 @@
 "use server"
 import { Grid, Box } from "@mui/material";
-import ResponsiveFilterSidebar from "../components/ResponsiveFilterSidebar";
+import ResponsiveFilterSidebar from "../components/FilterSidebar";
 import ProductList from "../components/ProductList";
 import { getProduct } from "../api/products";
 import { redirect } from "next/navigation";

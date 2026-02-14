@@ -1,7 +1,7 @@
 "use client"
 import { Box, Chip, Stack, Typography } from "@mui/material";
 import { FacetValue, SearchResult } from "../api/products";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PriceRangeSlider from "./PriceRangeSlider";
 
 type SearchFilterSideBarProps = {
@@ -9,14 +9,17 @@ type SearchFilterSideBarProps = {
   minPrice: number;
   maxPrice: number;
   searchParams: Record<string, string>;
+  onFilterClick?: () => void;
 };
 
 export default function SearchFilterSideBar({
   facets,
   minPrice,
   maxPrice,
-  searchParams
+  searchParams,
+  onFilterClick
 }: SearchFilterSideBarProps) {
+  const router = useRouter();
 
   const buildFilterUrl = (filterKey: string, filterValue: string) => {
     const params = new URLSearchParams();
@@ -41,7 +44,7 @@ export default function SearchFilterSideBar({
   };
 
   const isActiveFilter = (key: string, value: string): boolean => {
-    return searchParams[key] === value;
+    return searchParams[key].toLowerCase() === value.toLowerCase();
   };
 
   const renderFacet = (title: string, key: string) => {
@@ -56,40 +59,43 @@ export default function SearchFilterSideBar({
         <Stack spacing={0.5}>
           {values.map((facet: FacetValue) => {
             const isActive = isActiveFilter(key, facet.value);
+            const filterUrl = buildFilterUrl(key, facet.value);
+
+            const handleClick = () => {
+              router.push(filterUrl);
+              onFilterClick?.();
+            };
 
             return (
-              <Link
+              <Box
                 key={facet.value}
-                href={buildFilterUrl(key, facet.value)}
-                style={{ textDecoration: 'none', color: 'inherit' }}
+                onClick={handleClick}
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                py={0.5}
+                px={1}
+                sx={{
+                  borderRadius: 1,
+                  backgroundColor: isActive ? 'primary.main' : 'transparent',
+                  color: isActive ? 'primary.contrastText' : 'inherit',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: isActive ? 'primary.dark' : 'action.hover',
+                  },
+                  transition: 'all 0.2s',
+                }}
               >
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  py={0.5}
-                  px={1}
-                  sx={{
-                    borderRadius: 1,
-                    backgroundColor: isActive ? 'primary.main' : 'transparent',
-                    color: isActive ? 'primary.contrastText' : 'inherit',
-                    '&:hover': {
-                      backgroundColor: isActive ? 'primary.dark' : 'action.hover',
-                    },
-                    transition: 'all 0.2s',
-                  }}
+                <Typography variant="body2" fontWeight={isActive ? 600 : 400}>
+                  {facet.value}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color={isActive ? 'inherit' : 'text.secondary'}
                 >
-                  <Typography variant="body2" fontWeight={isActive ? 600 : 400}>
-                    {facet.value}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color={isActive ? 'inherit' : 'text.secondary'}
-                  >
-                    ({facet.count})
-                  </Typography>
-                </Box>
-              </Link>
+                  ({facet.count})
+                </Typography>
+              </Box>
             );
           })}
         </Stack>
@@ -102,7 +108,7 @@ export default function SearchFilterSideBar({
     .sort();
 
   return (
-    <Stack>
+    <Stack spacing={3}>
       {renderFacet("Marca", "brand")}
 
       {(minPrice || maxPrice) && (
@@ -113,7 +119,9 @@ export default function SearchFilterSideBar({
           {!minPrice && !maxPrice ? (
             <Typography variant="body2" color="text.secondary">--</Typography>
           ) : (
-            <PriceRangeSlider min={minPrice} max={maxPrice} />
+            <Box width={"100%"} display={"flex"}>
+              <PriceRangeSlider min={minPrice} max={maxPrice} />
+            </Box>
           )}
         </Box>
       )}

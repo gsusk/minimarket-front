@@ -1,4 +1,3 @@
-import React from 'react'
 import ProductCard from './ProductCard'
 import { Grid } from '@mui/material'
 import { Product } from '../api/products'
@@ -11,7 +10,7 @@ export default function ProductList({ products }: { products: Product[] }) {
   return (
     <Grid container spacing={2}>
       {products.map((product) => (
-        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product.id}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
           <ProductCard product={product} />
         </Grid>
       ))}

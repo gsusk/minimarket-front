@@ -1,61 +1,124 @@
-import { Box, Checkbox, FormControlLabel, FormGroup, Slider, Stack, Typography, Link as MuiLink } from "@mui/material";
+"use client"
+import { Box, Chip, Stack, Typography } from "@mui/material";
 import { FacetValue, SearchResult } from "../api/products";
 import Link from "next/link";
+import PriceRangeSlider from "./PriceRangeSlider";
 
-export default function SearchFilterSideBar({ facets, minPrice, maxPrice }: { facets: SearchResult["facets"], minPrice: number, maxPrice: number }) {
-  const renderFacet = (title: string, key: string, open: boolean = true) => {
+type SearchFilterSideBarProps = {
+  facets: SearchResult["facets"];
+  minPrice: number;
+  maxPrice: number;
+  searchParams: Record<string, string>;
+};
+
+export default function SearchFilterSideBar({
+  facets,
+  minPrice,
+  maxPrice,
+  searchParams
+}: SearchFilterSideBarProps) {
+
+  const buildFilterUrl = (filterKey: string, filterValue: string) => {
+    const params = new URLSearchParams();
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (key !== filterKey) {
+        params.append(key, value);
+      }
+    });
+
+    if (searchParams[filterKey] === filterValue) {
+    } else {
+      params.append(filterKey, filterValue);
+    }
+    return `/search?${params.toString()}`;
+  };
+
+  const formatLabel = (key: string): string => {
+    return key
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const isActiveFilter = (key: string, value: string): boolean => {
+    return searchParams[key] === value;
+  };
+
+  const renderFacet = (title: string, key: string) => {
     const values = facets[key];
     if (!values || values.length === 0) return null;
 
     return (
       <Box mb={3} key={key}>
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>{title}</Typography>
-        <FormGroup>
-          {values.map((facet: FacetValue) => (
-            <Link
-              key={facet.value}
-              href={`/search?q=${getSearchParam('q')}&${key}=${facet.value}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center" py={0.5}>
-                <Typography variant="body2">{facet.value}</Typography>
-                <Typography variant="caption" color="text.secondary">({facet.count})</Typography>
-              </Box>
-            </Link>
-          ))}
-        </FormGroup>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+          {title}
+        </Typography>
+        <Stack spacing={0.5}>
+          {values.map((facet: FacetValue) => {
+            const isActive = isActiveFilter(key, facet.value);
+
+            return (
+              <Link
+                key={facet.value}
+                href={buildFilterUrl(key, facet.value)}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  py={0.5}
+                  px={1}
+                  sx={{
+                    borderRadius: 1,
+                    backgroundColor: isActive ? 'primary.main' : 'transparent',
+                    color: isActive ? 'primary.contrastText' : 'inherit',
+                    '&:hover': {
+                      backgroundColor: isActive ? 'primary.dark' : 'action.hover',
+                    },
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Typography variant="body2" fontWeight={isActive ? 600 : 400}>
+                    {facet.value}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color={isActive ? 'inherit' : 'text.secondary'}
+                  >
+                    ({facet.count})
+                  </Typography>
+                </Box>
+              </Link>
+            );
+          })}
+        </Stack>
       </Box>
-    )
-  }
+    );
+  };
+
+  const dynamicFacetKeys = Object.keys(facets)
+    .filter(key => key !== 'brand')
+    .sort();
 
   return (
     <Stack>
-      {renderFacet("Categorías", "category")}
-      {renderFacet("Marcas", "brand")}
-      {
+      {renderFacet("Marca", "brand")}
 
-        <Box>
-          Precio
-          <Stack direction={"row"} spacing={2}>{minPrice && <Box>${minPrice}</Box>}{minPrice && maxPrice && <Box>-</Box>}{maxPrice && <Box>${maxPrice}</Box>}</Stack>
-          {!minPrice && !maxPrice && <Box>--</Box>}
-          <Stack spacing={2}>
-          </Stack>
+      {(minPrice || maxPrice) && (
+        <Box mb={3}>
+          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+            Precio
+          </Typography>
+          {!minPrice && !maxPrice ? (
+            <Typography variant="body2" color="text.secondary">--</Typography>
+          ) : (
+            <PriceRangeSlider min={minPrice} max={maxPrice} />
+          )}
         </Box>
-      }
-      {Object.keys(facets).map(key => {
-        if (key !== 'category' && key !== 'brand') {
-          return renderFacet(key.charAt(0).toUpperCase() + key.slice(1), key)
-        }
-        return null
-      })}
+      )}
 
+      {dynamicFacetKeys.map(key => renderFacet(formatLabel(key), key))}
     </Stack>
-  )
-}
-
-function getSearchParam(key: string) {
-  if (typeof window !== 'undefined') {
-    return new URLSearchParams(window.location.search).get(key) || ''
-  }
-  return ''
+  );
 }

@@ -28,7 +28,12 @@ export default async function Search({ searchParams }: { searchParams: searchPar
     <>
       <Grid py={4} px={5} minHeight={"100vh"} container spacing={2}>
         <Grid size={3}>
-          <SearchFilterSideBar facets={searchResult.facets} minPrice={searchResult.minPrice} maxPrice={searchResult.maxPrice}></SearchFilterSideBar>
+          <SearchFilterSideBar
+            facets={searchResult.facets}
+            minPrice={searchResult.minPrice}
+            maxPrice={searchResult.maxPrice}
+            searchParams={filters}
+          />
         </Grid>
         <Grid size={9}>
           <ProductList products={searchResult.products} />
@@ -39,14 +44,16 @@ export default async function Search({ searchParams }: { searchParams: searchPar
 }
 
 function buildSearchTerm(params: Awaited<searchParams>): string {
-  const search = new URL("http://localhost:8080")
+  const searchParams = new URLSearchParams();
+
   for (const [k, v] of Object.entries(params)) {
-    if (k !== 'q' && k !== 'min' && k !== 'max' && k !== 'category' && k !== 'brand') {
-      if (v) search.searchParams.append(k.trim(), v.trim())
-    } else {
-      if (v) search.searchParams.append(k.trim(), v.trim())
+    if (v && typeof v === "string") {
+      const trimmedValue = v.trim();
+      if (trimmedValue !== "") {
+        searchParams.append(k.trim(), trimmedValue);
+      }
     }
   }
 
-  return search.searchParams.toString()
+  return searchParams.toString();
 }

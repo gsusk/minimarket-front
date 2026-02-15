@@ -24,10 +24,10 @@ export default function SearchFilterSideBar({
   const buildFilterUrl = (filterKey: string, filterValue: string) => {
     const params = new URLSearchParams(searchParams);
 
-    if (searchParams[filterKey] === filterValue) {
+    if (isActiveFilter(filterKey, filterValue)) {
       params.delete(filterKey)
     } else {
-      params.append(filterKey, filterValue);
+      params.set(filterKey, filterValue);
     }
     return `/search?${params.toString()}`;
   };
@@ -40,7 +40,14 @@ export default function SearchFilterSideBar({
   };
 
   const isActiveFilter = (key: string, value: string): boolean => {
-    return searchParams[key]?.toLowerCase() === value?.toLowerCase();
+    const param = searchParams[key];
+    if (!param) return false;
+
+    if (Array.isArray(param)) {
+      return param.some(v => v.toLowerCase() === value?.toLowerCase());
+    }
+
+    return param.toLowerCase() === value?.toLowerCase();
   };
 
   const renderFacet = (title: string, key: string) => {

@@ -6,23 +6,29 @@ import { getProduct } from "../api/products";
 import { redirect } from "next/navigation";
 
 type searchParams = Promise<{
-  q: string,
-  min: string,
-  max: string,
-  category: string,
-  brand: string,
-  [x: string]: string
+  q?: string | string[],
+  min?: string | string[],
+  max?: string | string[],
+  category?: string | string[],
+  brand?: string | string[],
+  [x: string]: string | string[] | undefined
 }>
 
 export default async function Search({ searchParams }: { searchParams: searchParams }) {
-  const filters = await searchParams
+  const params = await searchParams
 
-  if (!filters.q || filters.q.trim() == "") {
+  const filters = Object.fromEntries(
+    Object.entries(params).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value[value.length - 1] : (value || "")
+    ])
+  ) as Record<string, string>;
+
+  if (!filters.q || filters.q.trim() === "") {
     redirect("/")
   }
 
-  const searchResult = await getProduct(buildSearchTerm(filters));
-
+  const searchResult = await getProduct(buildSearchTerm(params));
 
   return (
     <>

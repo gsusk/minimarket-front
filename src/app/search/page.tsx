@@ -27,27 +27,17 @@ export default async function Search({ searchParams }: { searchParams: searchPar
   return (
     <>
       <Grid py={4} px={{ xs: 2, sm: 3, md: 5 }} minHeight={"100vh"} container spacing={2}>
-        <Grid size={{ xs: 0, lg: 2 }} sx={{ display: { xs: "none", lg: "block" } }}>
-          <ResponsiveFilterSidebar
-            facets={searchResult.facets}
-            minPrice={searchResult.minPrice}
-            maxPrice={searchResult.maxPrice}
-            searchParams={filters}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 10 }}>
-          <ProductList products={searchResult.products} />
-        </Grid>
-      </Grid>
-
-      <Box sx={{ display: { xs: "block", lg: "none" } }}>
         <ResponsiveFilterSidebar
+          key={filters.q}
           facets={searchResult.facets}
           minPrice={searchResult.minPrice}
           maxPrice={searchResult.maxPrice}
           searchParams={filters}
         />
-      </Box>
+        <Grid size={{ xs: 12, lg: 10 }}>
+          <ProductList products={searchResult.products} />
+        </Grid>
+      </Grid>
     </>
   )
 }

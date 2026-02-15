@@ -10,48 +10,65 @@ type Props = {
 }
 
 export default function PriceRangeSlider({ min, max }: Props) {
-  const [priceRange, setPriceRange] = useState(() => {
-    if (!min && !max || min === 0 && max == 0 || min > max) {
-      return []
-    }
-    return [min, max]
-  })
-  const [debouncedPriceRange, setDebouncedPriceRange] = useState(priceRange)
-  const router = useRouter()
   const searchParams = useSearchParams()
+  const router = useRouter()
 
-  const handleChange = (event: Event, newValue: number[]) => {
-    if (priceRange)
-      setPriceRange(newValue);
+  const [priceRange, setPriceRange] = useState<number[]>(() => {
+    const urlMin = searchParams.get("min")
+    const urlMax = searchParams.get("max")
+
+    const currentMin = urlMin ? Number(urlMin) : (min ?? 0)
+    const currentMax = urlMax ? Number(urlMax) : (max ?? 100)
+
+    return [currentMin, currentMax]
+  })
+
+  useEffect(() => {
+    const urlMin = searchParams.get("min")
+    const urlMax = searchParams.get("max")
+
+    const targetMin = urlMin ? Number(urlMin) : min
+    const targetMax = urlMax ? Number(urlMax) : max
+
+    setPriceRange([targetMin, targetMax])
+  }, [searchParams, min, max])
+
+  const handleChange = (_: Event, newValue: number | number[]) => {
+    setPriceRange(newValue as number[]);
   };
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setDebouncedPriceRange(priceRange);
-    }, 500);
+  const handleCommit = (_: React.SyntheticEvent | Event, newValue: number | number[]) => {
+    const [newMin, newMax] = newValue as number[];
+    const sp = new URLSearchParams(searchParams.toString())
 
-    return () => clearTimeout(timeoutId);
-  }, [priceRange]);
+    if (newMin === min && newMax === max) {
+      sp.delete("min")
+      sp.delete("max")
+    } else {
+      sp.set("min", newMin.toString())
+      sp.set("max", newMax.toString())
+    }
 
-  // Only navigate when debounced value changes
-  useEffect(() => {
-    if (!debouncedPriceRange || debouncedPriceRange.length === 0) return;
-
-    let sp = searchParams.entries().reduce((prev, curr) => {
-      prev.searchParams.append(curr[0], curr[1])
-      return prev
-    }, new URL("https://example.com"))
-
-    sp.searchParams.set("min", debouncedPriceRange[0].toString())
-    sp.searchParams.set("max", debouncedPriceRange[1].toString())
-
-    router.push(`/search?${sp.searchParams.toString()}`)
-  }, [debouncedPriceRange])
+    const newQuery = sp.toString()
+    if (newQuery !== searchParams.toString()) {
+      router.push(`/search?${newQuery}`)
+    }
+  };
 
   return (
     <Box width={"100%"} display={"flex"} flexDirection={"column"} gap={2} px={1} py={1}>
-      <Box>${priceRange[0] || ""} - ${priceRange[1] || ""}</Box>
-      <Slider value={priceRange} onChange={handleChange} disableSwap getAriaLabel={() => "hello"} valueLabelDisplay="auto" min={min || 0} max={max}></Slider>
+      <Box fontSize="0.875rem" fontWeight={500}>
+        ${priceRange[0]} - ${priceRange[1]}
+      </Box>
+      <Slider
+        value={priceRange}
+        onChange={handleChange}
+        onChangeCommitted={handleCommit}
+        disableSwap
+        valueLabelDisplay="auto"
+        min={min}
+        max={max}
+      />
     </Box>
   )
 }

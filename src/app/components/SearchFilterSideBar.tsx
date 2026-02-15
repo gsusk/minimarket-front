@@ -22,14 +22,10 @@ export default function SearchFilterSideBar({
   const router = useRouter();
 
   const buildFilterUrl = (filterKey: string, filterValue: string) => {
-    const params = new URLSearchParams();
-    Object.entries(searchParams).forEach(([key, value]) => {
-      if (key !== filterKey) {
-        params.append(key, value);
-      }
-    });
+    const params = new URLSearchParams(searchParams);
 
     if (searchParams[filterKey] === filterValue) {
+      params.delete(filterKey)
     } else {
       params.append(filterKey, filterValue);
     }

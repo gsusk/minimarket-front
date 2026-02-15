@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react";
-import { Box, Drawer, Fab, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Drawer, Fab, Grid, useMediaQuery, useTheme } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchFilterSideBar from "./SearchFilterSideBar";
 import { SearchResult } from "../api/products";
@@ -28,12 +28,14 @@ export default function FilterSidebar({
 
   if (isDesktop) {
     return (
-      <SearchFilterSideBar
-        facets={facets}
-        minPrice={minPrice}
-        maxPrice={maxPrice}
-        searchParams={searchParams}
-      />
+      <Grid size={{ xs: 0, lg: 2 }}>
+        <SearchFilterSideBar
+          facets={facets}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          searchParams={searchParams}
+        />
+      </Grid>
     );
   }
 

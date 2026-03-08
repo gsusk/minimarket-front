@@ -4,6 +4,7 @@ import ResponsiveFilterSidebar from "../components/FilterSidebar";
 import ProductList from "../components/ProductList";
 import { getProduct } from "../api/products";
 import { redirect } from "next/navigation";
+import { AppError } from "../utils/errors";
 
 type searchParams = Promise<{
   q?: string | string[],
@@ -27,25 +28,34 @@ export default async function Search({ searchParams }: { searchParams: searchPar
   if (!filters.q || filters.q.trim() === "") {
     redirect("/")
   }
+  try {
 
-  const searchResult = await getProduct(buildSearchTerm(params));
-
-  return (
-    <>
-      <Grid py={4} px={{ xs: 2, sm: 3, md: 5 }} minHeight={"100vh"} container spacing={2}>
-        <ResponsiveFilterSidebar
-          key={filters.q}
-          facets={searchResult.facets}
-          minPrice={searchResult.minPrice}
-          maxPrice={searchResult.maxPrice}
-          searchParams={filters}
-        />
-        <Grid size={{ xs: 12, lg: 10 }}>
-          <ProductList products={searchResult.products} />
+    const searchResult = await getProduct(buildSearchTerm(params));
+    return (
+      <>
+        <Grid py={4} px={{ xs: 2, sm: 3, md: 5 }} minHeight={"100vh"} container spacing={2}>
+          <ResponsiveFilterSidebar
+            key={filters.q}
+            facets={searchResult.facets}
+            minPrice={searchResult.minPrice}
+            maxPrice={searchResult.maxPrice}
+            searchParams={filters}
+          />
+          <Grid size={{ xs: 12, lg: 10 }}>
+            <ProductList products={searchResult.products} />
+          </Grid>
         </Grid>
-      </Grid>
-    </>
-  )
+      </>
+    )
+  } catch (err: unknown) {
+    return (
+      <>
+        <Grid py={4} px={{ xs: 2, sm: 3, md: 5 }} minHeight={"100vh"} container spacing={2} color={"red"}>
+          <Box>{err instanceof AppError ? err.message : "Unknow error: " + err}</Box>
+        </Grid>
+      </>
+    )
+  }
 }
 
 function buildSearchTerm(params: Awaited<searchParams>): string {

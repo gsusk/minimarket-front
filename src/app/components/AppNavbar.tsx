@@ -1,13 +1,16 @@
 "use client"
-import { AppBar, Toolbar, Typography, Stack, IconButton, Box, Badge, Tooltip, Skeleton, Icon, } from '@mui/material';
+import { AppBar, Toolbar, Typography, Stack, IconButton, Box, Badge, Tooltip, Skeleton } from '@mui/material';
 import { Notifications, ShoppingCartOutlined, Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
 import LoginIcon from '@mui/icons-material/Login';
 import Search from './Search';
 import useMe from '../api/user';
 import Link from 'next/link';
+import CartDrawer from './CartDrawer';
+import { useCart } from './CartProvider';
 
 export default function AppNavbar() {
   const { data, isLoading } = useMe()
+  const { itemCount, openCart } = useCart();
 
   return (
     <Box sx={{ flexGrow: 1 }} >
@@ -39,6 +42,15 @@ export default function AppNavbar() {
           </Box>
 
           <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton
+              onClick={openCart}
+              aria-label="Abrir carrito"
+              sx={{ display: { xs: "flex", md: "none" }, color: 'text.primary' }}
+            >
+              <Badge badgeContent={itemCount} color="error">
+                <ShoppingCartOutlined />
+              </Badge>
+            </IconButton>
 
             <Stack
               direction="row"
@@ -46,8 +58,8 @@ export default function AppNavbar() {
               sx={{ display: { xs: "none", md: "flex" }, pl: { xs: 1, sm: 2, md: 3 } }}
             >
               <Stack direction="row" spacing={1} >
-                <IconButton>
-                  <Badge badgeContent={2} color="error">
+                <IconButton onClick={openCart} aria-label="Abrir carrito">
+                  <Badge badgeContent={itemCount} color="error">
                     <ShoppingCartOutlined />
                   </Badge>
                 </IconButton>
@@ -85,6 +97,7 @@ export default function AppNavbar() {
 
         </Toolbar>
       </AppBar>
+      <CartDrawer />
     </Box>
   );
 }

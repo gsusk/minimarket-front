@@ -1,9 +1,15 @@
+"use client";
+
 import { Card, CardContent, Typography, Box, IconButton, Stack } from "@mui/material";
-import { AddShoppingCartOutlined, FavoriteBorder } from "@mui/icons-material";
+import { AddShoppingCartOutlined, CheckCircleOutline, FavoriteBorder } from "@mui/icons-material";
 import Image from "next/image";
 import { Product } from "../api/products";
+import { useCart } from "./CartProvider";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { addItem, items } = useCart();
+  const quantityInCart = items.find((item) => item.id === product.id)?.quantity ?? 0;
+
   return (
     <Card
       elevation={0}
@@ -29,7 +35,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </IconButton>
 
         <Image
-          src={(product?.images && product.images.length > 0) ? product.images[0] : '/placeholder.png'}
+          src={(product?.images && product.images.length > 0) ? product.images[0] : '/window.svg'}
           alt={product?.name || "card picture"}
           fill
           style={{
@@ -65,8 +71,18 @@ export default function ProductCard({ product }: { product: Product }) {
             <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
               ${product?.price.toLocaleString()}
             </Typography>
+            {quantityInCart > 0 && (
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5, color: 'success.main' }}>
+                <CheckCircleOutline sx={{ fontSize: 16 }} />
+                <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                  {quantityInCart} en el carrito
+                </Typography>
+              </Stack>
+            )}
           </Box>
           <IconButton
+            onClick={() => addItem(product)}
+            aria-label={`Agregar ${product.name} al carrito`}
             sx={{
               bgcolor: 'primary.main',
               color: 'white',

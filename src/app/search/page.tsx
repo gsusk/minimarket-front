@@ -51,7 +51,7 @@ export default async function Search({ searchParams }: { searchParams: searchPar
     return (
       <>
         <Grid py={4} px={{ xs: 2, sm: 3, md: 5 }} minHeight={"100vh"} container spacing={2} color={"red"}>
-          <Box>{err instanceof AppError ? err.message : "Unknow error: " + err}</Box>
+          <Box>{err instanceof AppError ? err.message : "Error desconocido: " + err}</Box>
         </Grid>
       </>
     )

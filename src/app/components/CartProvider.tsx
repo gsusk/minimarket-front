@@ -116,7 +116,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartContext.Provider
       value={{
-        items: cart.shoppingCartItems,
+        items: [...cart.shoppingCartItems].sort((a, b) => a.productId - b.productId),
         itemCount,
         total,
         isCartOpen,

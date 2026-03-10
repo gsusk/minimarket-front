@@ -47,7 +47,7 @@ export default function AppNavbar() {
               aria-label="Abrir carrito"
               sx={{ display: { xs: "flex", md: "none" }, color: 'text.primary' }}
             >
-              <Badge badgeContent={itemCount} color="error">
+              <Badge badgeContent={itemCount && itemCount > 99 ? '99' : itemCount} color="error">
                 <ShoppingCartOutlined />
               </Badge>
             </IconButton>
@@ -59,7 +59,7 @@ export default function AppNavbar() {
             >
               <Stack direction="row" spacing={1} >
                 <IconButton onClick={openCart} aria-label="Abrir carrito">
-                  <Badge badgeContent={itemCount} color="error">
+                  <Badge badgeContent={itemCount && itemCount > 99 ? '99' : itemCount} color="error">
                     <ShoppingCartOutlined />
                   </Badge>
                 </IconButton>

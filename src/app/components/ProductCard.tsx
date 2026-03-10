@@ -75,7 +75,7 @@ export default function ProductCard({ product }: { product: Product }) {
               <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5, color: 'success.main' }}>
                 <CheckCircleOutline sx={{ fontSize: 16 }} />
                 <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                  {quantityInCart} en el carrito
+                  {quantityInCart > 99 ? '+99' : quantityInCart} en el carrito
                 </Typography>
               </Stack>
             )}

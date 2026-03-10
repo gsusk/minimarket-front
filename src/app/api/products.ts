@@ -23,7 +23,7 @@ export type SearchResult = {
   total: number
 }
 
-export async function getProduct(searchTerms: string): Promise<SearchResult> {
+export async function getProductBySearch(searchTerms: string): Promise<SearchResult> {
   const response = await api.get<SearchResult>(`/search?${searchTerms}`)
   return response.data
 }

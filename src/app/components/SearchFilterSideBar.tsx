@@ -32,6 +32,10 @@ export default function SearchFilterSideBar({
     return `/search?${params.toString()}`;
   };
 
+  if (!facets) {
+    facets = {}
+  }
+
   const formatLabel = (key: string): string => {
     return key
       .split('_')
@@ -106,7 +110,7 @@ export default function SearchFilterSideBar({
     );
   };
 
-  const dynamicFacetKeys = Object.keys(facets)
+  const dynamicFacetKeys = Object.keys(facets ?? [])
     .filter(key => key !== 'brand')
     .sort();
 

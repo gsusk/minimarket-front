@@ -8,7 +8,7 @@ import { useCart } from "./CartProvider";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, items } = useCart();
-  const quantityInCart = items.find((item) => item.id === product.id)?.quantity ?? 0;
+  const quantityInCart = items.find((item) => item.productId === product.id)?.quantity ?? 0;
 
   return (
     <Card

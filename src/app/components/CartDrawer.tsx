@@ -1,7 +1,10 @@
+"use client";
 
 import {
+  Avatar,
   Box,
   Button,
+  CircularProgress,
   Divider,
   Drawer,
   IconButton,
@@ -11,12 +14,20 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Add, Close, DeleteOutline, Remove } from "@mui/icons-material";
-import Image from "next/image";
+import { Add, Close, DeleteOutline, Remove, ShoppingBagOutlined } from "@mui/icons-material";
 import { useCart } from "./CartProvider";
 
+function toCurrency(value: number) {
+  return value.toLocaleString();
+}
+
+function toNumber(value: string): number {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
 export default function CartDrawer() {
-  const { items, total, isCartOpen, closeCart, addItem, removeItem, deleteItem, clearCart } = useCart();
+  const { items, total, isCartOpen, closeCart, addItem, removeItem, deleteItem, clearCart, isLoading } = useCart();
 
   return (
     <Drawer
@@ -45,7 +56,14 @@ export default function CartDrawer() {
         </IconButton>
       </Stack>
 
-      {items.length === 0 ? (
+      {isLoading ? (
+        <Stack flex={1} alignItems="center" justifyContent="center" spacing={2}>
+          <CircularProgress />
+          <Typography variant="body2" color="text.secondary">
+            Cargando carrito...
+          </Typography>
+        </Stack>
+      ) : items.length === 0 ? (
         <Stack flex={1} alignItems="center" justifyContent="center" spacing={2} textAlign="center">
           <Typography variant="h6" fontWeight={700}>
             Tu carrito esta vacio
@@ -58,32 +76,27 @@ export default function CartDrawer() {
         <>
           <List sx={{ flex: 1, overflowY: "auto", px: 0 }}>
             {items.map((item) => (
-              <Box key={item.id}>
+              <Box key={item.productId}>
                 <ListItem sx={{ px: 0, py: 2, alignItems: "flex-start" }}>
-                  <Box
+                  <Avatar
+                    variant="rounded"
                     sx={{
-                      position: "relative",
                       width: 82,
                       height: 82,
                       borderRadius: 3,
-                      overflow: "hidden",
                       bgcolor: "grey.100",
+                      color: "text.secondary",
                       flexShrink: 0,
                       mr: 2,
                     }}
                   >
-                    <Image
-                      src={item.images?.[0] || "/window.svg"}
-                      alt={item.name}
-                      fill
-                      style={{ objectFit: "contain", padding: "10px" }}
-                    />
-                  </Box>
+                    <ShoppingBagOutlined />
+                  </Avatar>
 
                   <Box sx={{ flex: 1 }}>
                     <ListItemText
                       primary={item.name}
-                      secondary={item.category}
+                      secondary={`Precio unitario: $${toCurrency(toNumber(item.unitPrice))}`}
                       slotProps={{
                         primary: { fontWeight: 700 },
                         secondary: { color: "text.secondary" },
@@ -94,7 +107,7 @@ export default function CartDrawer() {
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <IconButton
                           size="small"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item.productId)}
                           aria-label={`Quitar una unidad de ${item.name}`}
                         >
                           <Remove fontSize="small" />
@@ -113,11 +126,11 @@ export default function CartDrawer() {
 
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography fontWeight={800}>
-                          ${(item.price * item.quantity).toLocaleString()}
+                          ${toCurrency(toNumber(item.unitPrice) * item.quantity)}
                         </Typography>
                         <IconButton
                           color="error"
-                          onClick={() => deleteItem(item.id)}
+                          onClick={() => deleteItem(item.productId)}
                           aria-label={`Eliminar ${item.name} del carrito`}
                         >
                           <DeleteOutline fontSize="small" />
@@ -137,7 +150,7 @@ export default function CartDrawer() {
                 Total
               </Typography>
               <Typography variant="h6" fontWeight={900}>
-                ${total.toLocaleString()}
+                ${toCurrency(total)}
               </Typography>
             </Stack>
 

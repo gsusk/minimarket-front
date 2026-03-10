@@ -25,6 +25,7 @@ export default function LoginPage() {
     onSuccess: async (data) => {
       localStorage.setItem('access_token', data.accessToken);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
+      await queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.prefetchQuery({ queryKey: ["me"], queryFn: userMe });
       router.replace('/');
     },

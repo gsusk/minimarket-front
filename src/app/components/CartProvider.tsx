@@ -1,172 +1,126 @@
 "use client";
 
-import { createContext, useContext, useState, useSyncExternalStore } from "react";
+import { createContext, useContext, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Product } from "../api/products";
+import {
+  addCartItem,
+  deleteCartItem,
+  emptyCart,
+  getCartProducts,
+  ShoppingCart,
+  ShoppingCartItem,
+  updateCartItemQuantity,
+} from "../api/cart";
 
-const CART_STORAGE_KEY = "minimarket_cart";
-
-export type CartItem = Product & {
-  quantity: number;
-};
+type CartProductInput = Product | Pick<ShoppingCartItem, "productId">;
 
 type CartContextValue = {
-  items: CartItem[];
+  items: ShoppingCartItem[];
   itemCount: number;
   total: number;
   isCartOpen: boolean;
-  addItem: (product: Product) => void;
+  isLoading: boolean;
+  addItem: (product: CartProductInput) => void;
   removeItem: (productId: number) => void;
   deleteItem: (productId: number) => void;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
   openCart: () => void;
   closeCart: () => void;
 };
 
-//necesitamos el contexto para poder usar el carrito en tda la app
+export const CART_QUERY_KEY = ["cart"] as const;
+
 const CartContext = createContext<CartContextValue | null>(null);
-const emptyCart: CartItem[] = [];
-let cartSnapshot: CartItem[] = emptyCart;
-let cartSnapshotRaw = "";
 
-function parseStoredCart(rawCart: string | null): CartItem[] {
-  if (!rawCart) {
-    return emptyCart;
-  }
-
-  try {
-    const parsedCart = JSON.parse(rawCart);
-    if (!Array.isArray(parsedCart)) {
-      return emptyCart;
-    }
-
-    return parsedCart.filter(
-      (item): item is CartItem =>
-        item &&
-        typeof item.id === "number" &&
-        typeof item.name === "string" &&
-        typeof item.price === "number" &&
-        typeof item.quantity === "number"
-    ) || emptyCart;
-  } catch (err) {
-    console.error(err);
-    return emptyCart;
-  }
+function toNumber(value: string): number {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
 }
 
-function getCartSnapshot(): CartItem[] {
-  if (typeof window === "undefined") {
-    return emptyCart;
-  }
-
-  const rawCart = window.localStorage.getItem(CART_STORAGE_KEY) ?? "";
-  if (rawCart === cartSnapshotRaw) {
-    return cartSnapshot;
-  }
-
-  cartSnapshotRaw = rawCart;
-  cartSnapshot = parseStoredCart(rawCart);
-  return cartSnapshot;
-}
-
-function emitCartChange() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.dispatchEvent(new Event("cart-updated"));
-}
-
-function writeStoredCart(items: CartItem[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const nextSnapshot = items.length > 0 ? items : emptyCart;
-  const rawCart = JSON.stringify(nextSnapshot);
-
-  cartSnapshot = nextSnapshot;
-  cartSnapshotRaw = rawCart;
-  window.localStorage.setItem(CART_STORAGE_KEY, rawCart);
-  emitCartChange();
-}
-
-function subscribeToCart(listener: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  const handleCartChange = () => listener();
-  const handleStorageChange = (event: StorageEvent) => {
-    if (event.key === CART_STORAGE_KEY) {
-      listener();
-    }
-  };
-
-  window.addEventListener("cart-updated", handleCartChange);
-  window.addEventListener("storage", handleStorageChange);
-
-  return () => {
-    window.removeEventListener("cart-updated", handleCartChange);
-    window.removeEventListener("storage", handleStorageChange);
-  };
+function getProductId(product: CartProductInput): number {
+  return "id" in product ? product.id : product.productId;
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const items = useSyncExternalStore(subscribeToCart, getCartSnapshot, () => emptyCart);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const queryClient = useQueryClient();
 
-  const addItem = (product: Product) => {
-    const currentItems = getCartSnapshot();
-    const existingItem = currentItems.find((item) => item.id === product.id);
+  const { data: cart = emptyCart, isLoading: isCartLoading, isFetching: isCartFetching } = useQuery({
+    queryKey: CART_QUERY_KEY,
+    queryFn: getCartProducts,
+    staleTime: 30_000,
+  });
 
-    if (!existingItem) {
-      writeStoredCart([...currentItems, { ...product, quantity: 1 }]);
-      setIsCartOpen(true);
-      return;
-    }
+  const setCartCache = (nextCart: ShoppingCart) => {
+    queryClient.setQueryData(CART_QUERY_KEY, nextCart);
+  };
 
-    writeStoredCart(
-      currentItems.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
-    );
+  const addItemMutation = useMutation({
+    mutationFn: ({ productId, quantity }: { productId: number; quantity: number }) =>
+      addCartItem({ productId, quantity }),
+    onSuccess: (nextCart) => {
+      setCartCache(nextCart);
+    },
+  });
+
+  const updateItemMutation = useMutation({
+    mutationFn: ({ productId, quantity }: { productId: number; quantity: number }) =>
+      updateCartItemQuantity(productId, { quantity }),
+    onSuccess: (nextCart) => {
+      setCartCache(nextCart);
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: deleteCartItem,
+    onSuccess: (nextCart) => {
+      setCartCache(nextCart);
+    },
+  });
+
+  const addItem = (product: CartProductInput) => {
+    const productId = getProductId(product);
     setIsCartOpen(true);
+    addItemMutation.mutate({ productId, quantity: 1 });
   };
 
   const removeItem = (productId: number) => {
-    const currentItems = getCartSnapshot();
-    const targetItem = currentItems.find((item) => item.id === productId);
+    const currentItem = cart.shoppingCartItems.find((item) => item.productId === productId);
 
-    if (!targetItem) {
+    if (!currentItem) {
       return;
     }
 
-    if (targetItem.quantity <= 1) {
-      writeStoredCart(currentItems.filter((item) => item.id !== productId));
+    if (currentItem.quantity <= 1) {
+      deleteItemMutation.mutate(productId);
       return;
     }
 
-    writeStoredCart(
-      currentItems.map((item) => (item.id === productId ? { ...item, quantity: item.quantity - 1 } : item))
-    );
+    updateItemMutation.mutate({ productId, quantity: currentItem.quantity - 1 });
   };
 
   const deleteItem = (productId: number) => {
-    writeStoredCart(getCartSnapshot().filter((item) => item.id !== productId));
+    deleteItemMutation.mutate(productId);
   };
 
-  const clearCart = () => {
-    writeStoredCart([]);
+  const clearCart = async () => {
+    for (const item of cart.shoppingCartItems) {
+      await deleteItemMutation.mutateAsync(item.productId);
+    }
   };
 
-  const itemCount = items.reduce((totalItems, item) => totalItems + item.quantity, 0);
-  const total = items.reduce((cartTotal, item) => cartTotal + item.price * item.quantity, 0);
+  const itemCount = cart.shoppingCartItems.reduce((count, item) => count + item.quantity, 0);
+  const total = toNumber(cart.subTotal);
 
   return (
     <CartContext.Provider
       value={{
-        items,
+        items: cart.shoppingCartItems,
         itemCount,
         total,
         isCartOpen,
+        isLoading: isCartLoading || (isCartFetching && cart.shoppingCartItems.length === 0),
         addItem,
         removeItem,
         deleteItem,

@@ -2,7 +2,7 @@
 import { Grid, Box } from "@mui/material";
 import ResponsiveFilterSidebar from "../components/FilterSidebar";
 import ProductList from "../components/ProductList";
-import { getProduct } from "../api/products";
+import { getProductBySearch } from "../api/products";
 import { redirect } from "next/navigation";
 import { AppError } from "../utils/errors";
 
@@ -30,7 +30,7 @@ export default async function Search({ searchParams }: { searchParams: searchPar
   }
   try {
 
-    const searchResult = await getProduct(buildSearchTerm(params));
+    const searchResult = await getProductBySearch(buildSearchTerm(params));
     return (
       <>
         <Grid py={4} px={{ xs: 2, sm: 3, md: 5 }} minHeight={"100vh"} container spacing={2}>

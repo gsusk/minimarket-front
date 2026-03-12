@@ -12,6 +12,7 @@ import {
   ShoppingCartItem,
   updateCartItemQuantity,
 } from "../api/cart";
+import { AppError } from "../utils/errors";
 
 type CartProductInput = Product | Pick<ShoppingCartItem, "productId">;
 
@@ -21,6 +22,9 @@ type CartContextValue = {
   total: number;
   isCartOpen: boolean;
   isLoading: boolean;
+  cartError: string | null;
+  mutationError: string | null;
+  clearMutationError: () => void;
   addItem: (product: CartProductInput) => void;
   removeItem: (productId: number) => void;
   deleteItem: (productId: number) => void;
@@ -42,18 +46,37 @@ function getProductId(product: CartProductInput): number {
   return "id" in product ? product.id : product.productId;
 }
 
+function getErrorMessage(err: unknown): string {
+  if (err instanceof AppError) return err.message;
+  if (err instanceof Error) return err.message;
+  return "Ocurrió un error inesperado";
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: cart = emptyCart, isLoading: isCartLoading, isFetching: isCartFetching } = useQuery({
+  const {
+    data: cart = emptyCart,
+    isLoading: isCartLoading,
+    isFetching: isCartFetching,
+    error: cartQueryError,
+  } = useQuery({
     queryKey: CART_QUERY_KEY,
     queryFn: getCartProducts,
     staleTime: 30_000,
+    retry: 1,
   });
+
+  const cartError = cartQueryError ? getErrorMessage(cartQueryError) : null;
 
   const setCartCache = (nextCart: ShoppingCart) => {
     queryClient.setQueryData(CART_QUERY_KEY, nextCart);
+  };
+
+  const handleMutationError = (err: unknown) => {
+    setMutationError(getErrorMessage(err));
   };
 
   const addItemMutation = useMutation({
@@ -62,6 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (nextCart) => {
       setCartCache(nextCart);
     },
+    onError: handleMutationError,
   });
 
   const updateItemMutation = useMutation({
@@ -70,6 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (nextCart) => {
       setCartCache(nextCart);
     },
+    onError: handleMutationError,
   });
 
   const deleteItemMutation = useMutation({
@@ -77,6 +102,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (nextCart) => {
       setCartCache(nextCart);
     },
+    onError: handleMutationError,
   });
 
   const addItem = (product: CartProductInput) => {
@@ -121,6 +147,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         total,
         isCartOpen,
         isLoading: isCartLoading || (isCartFetching && cart.shoppingCartItems.length === 0),
+        cartError,
+        mutationError,
+        clearMutationError: () => setMutationError(null),
         addItem,
         removeItem,
         deleteItem,

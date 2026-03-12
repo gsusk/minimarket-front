@@ -11,6 +11,7 @@ async function fetchFeaturedProducts(): Promise<Product[]> {
     });
     if (!res.ok) return [];
     const data: DetailedProduct[] = await res.json();
+
     return data.map((p) => ({
       id: p.id,
       name: p.name,

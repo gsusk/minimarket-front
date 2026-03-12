@@ -3,6 +3,7 @@ import api from "./api"
 export type Product = {
   id: number,
   name: string,
+  slug: string,
   category: string,
   price: number,
   brand: string,
@@ -20,6 +21,7 @@ export type CategorySummary = {
 export type DetailedProduct = {
   id: number,
   name: string,
+  slug: string,
   description: string,
   price: string,
   category: CategorySummary,
@@ -49,5 +51,10 @@ export async function getProductBySearch(searchTerms: string): Promise<SearchRes
 
 export async function getFeaturedProducts(): Promise<DetailedProduct[]> {
   const response = await api.get<DetailedProduct[]>("/products/featured")
+  return response.data
+}
+
+export async function getProductById(id: number): Promise<DetailedProduct> {
+  const response = await api.get<DetailedProduct>(`/products/${id}`)
   return response.data
 }

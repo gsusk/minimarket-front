@@ -14,6 +14,7 @@ async function fetchFeaturedProducts(): Promise<Product[]> {
     return data.map((p) => ({
       id: p.id,
       name: p.name,
+      slug: p.slug,
       category: p.category?.name ?? "",
       price: parseFloat(p.price),
       brand: p.brand,

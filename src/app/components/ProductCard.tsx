@@ -3,6 +3,7 @@
 import { Card, CardContent, Typography, Box, IconButton, Stack } from "@mui/material";
 import { AddShoppingCartOutlined, CheckCircleOutline, FavoriteBorder } from "@mui/icons-material";
 import Image from "next/image";
+import Link from "next/link";
 import { Product } from "../api/products";
 import { useCart } from "./CartProvider";
 
@@ -33,17 +34,19 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           <FavoriteBorder fontSize="small" />
         </IconButton>
-
-        <Image
-          src={(product?.images && product.images.length > 0) ? product.images[0] : '/window.svg'}
-          alt={product?.name || "card picture"}
-          fill
-          style={{
-            objectFit: 'contain',
-            padding: '15px',
-            mixBlendMode: 'multiply'
-          }}
-        />
+        <Link
+          href={`/product/${product.id}/${product.slug}`}>
+          <Image
+            src={(product?.images && product.images.length > 0) ? product.images[0] : '/window.svg'}
+            alt={product?.name || "card picture"}
+            fill
+            style={{
+              objectFit: 'contain',
+              padding: '15px',
+              mixBlendMode: 'multiply'
+            }}
+          />
+        </Link>
       </Box>
 
       <CardContent sx={{ pt: 2, px: 1 }}>
@@ -52,6 +55,8 @@ export default function ProductCard({ product }: { product: Product }) {
         </Typography>
         <Typography
           variant="body1"
+          component={Link}
+          href={`/product/${product.id}/${product.slug}`}
           sx={{
             fontWeight: 700,
             lineHeight: 1.2,
@@ -81,7 +86,11 @@ export default function ProductCard({ product }: { product: Product }) {
             )}
           </Box>
           <IconButton
-            onClick={() => addItem(product)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addItem(product);
+            }}
             aria-label={`Agregar ${product.name} al carrito`}
             sx={{
               bgcolor: 'primary.main',
@@ -96,3 +105,4 @@ export default function ProductCard({ product }: { product: Product }) {
     </Card>
   );
 }
+

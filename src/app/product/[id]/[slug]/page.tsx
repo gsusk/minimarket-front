@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import {
   Box,
   Container,
@@ -10,76 +6,44 @@ import {
   Button,
   Chip,
   Breadcrumbs,
-  Skeleton,
   Stack,
-  IconButton,
 } from "@mui/material";
 import {
-  AddShoppingCartOutlined,
   ArrowBack,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircleOutline,
   LocalShippingOutlined,
   VerifiedOutlined,
   SupportAgentOutlined,
 } from "@mui/icons-material";
-import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { DetailedProduct } from "../../../api/products";
-import { useCart } from "../../../components/CartProvider";
-import api from "../../../api/api";
+import ProductImageGallery from "../../../components/ProductImageGallery";
+import AddToCartSection from "../../../components/AddToCartSection";
 
-export default function ProductDetailPage() {
-  const params = useParams<{ id: string; slug: string }>();
-  const productId = Number(params.id);
-  const { addItem, items } = useCart();
+type PageParams = Promise<{ id: string; slug: string }>;
 
-  const [product, setProduct] = useState<DetailedProduct | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState(0);
-
-  const quantityInCart = items.find((item) => item.productId === productId)?.quantity ?? 0;
-
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const res = await api.get<DetailedProduct>(`/products/${productId}`);
-        setProduct(res.data);
-      } catch {
-        setError("No se pudo cargar el producto");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProduct();
-  }, [productId]);
-
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Grid container spacing={5}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Skeleton variant="rounded" height={450} sx={{ borderRadius: 4 }} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Skeleton width="40%" height={24} />
-            <Skeleton width="80%" height={48} sx={{ mt: 1 }} />
-            <Skeleton width="30%" height={56} sx={{ mt: 2 }} />
-            <Skeleton width="100%" height={100} sx={{ mt: 3 }} />
-            <Skeleton variant="rounded" width="50%" height={48} sx={{ mt: 4, borderRadius: 3 }} />
-          </Grid>
-        </Grid>
-      </Container>
-    );
+async function fetchProduct(id: number): Promise<DetailedProduct | null> {
+  try {
+    const res = await fetch(`http://localhost:8080/products/${id}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
+}
 
-  if (error || !product) {
+export default async function ProductDetailPage({ params }: { params: PageParams }) {
+  const { id, slug } = await params;
+  const productId = Number(id);
+  const product = await fetchProduct(productId);
+
+  if (!product) {
     return (
       <Container maxWidth="lg" sx={{ py: 10, textAlign: "center" }}>
         <Typography variant="h5" color="text.secondary" fontWeight={700}>
-          {error ?? "Producto no encontrado"}
+          Producto no encontrado
         </Typography>
         <Button
           component={Link}
@@ -94,13 +58,16 @@ export default function ProductDetailPage() {
     );
   }
 
+  if (product.slug && slug?.trim().toLowerCase() !== product.slug) {
+    redirect(`/product/${productId}/${product.slug}`);
+  }
+
   const images = product.images?.length > 0 ? product.images : ["/window.svg"];
   const inStock = product.stock > 0;
 
   return (
     <Box bgcolor="grey.100" minHeight="100vh" pb={8}>
       <Container maxWidth="lg" sx={{ pt: 3 }}>
-        {/* Breadcrumbs */}
         <Breadcrumbs sx={{ mb: 3, fontSize: 14 }}>
           <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
             Inicio
@@ -116,99 +83,11 @@ export default function ProductDetailPage() {
         </Breadcrumbs>
 
         <Grid container spacing={5}>
-          {/* Image Gallery */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Box
-              sx={{
-                position: "relative",
-                bgcolor: "white",
-                borderRadius: 4,
-                overflow: "hidden",
-                pt: "100%",
-                boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-              }}
-            >
-              <Image
-                src={images[selectedImage]}
-                alt={product.name}
-                fill
-                style={{
-                  objectFit: "contain",
-                  padding: "32px",
-                  mixBlendMode: "multiply",
-                }}
-                priority
-              />
-
-              {/* Image nav arrows */}
-              {images.length > 1 && (
-                <>
-                  <IconButton
-                    onClick={() => setSelectedImage((p) => (p > 0 ? p - 1 : images.length - 1))}
-                    sx={{
-                      position: "absolute",
-                      left: 8,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      bgcolor: "rgba(255,255,255,0.85)",
-                      "&:hover": { bgcolor: "white" },
-                    }}
-                  >
-                    <ChevronLeft />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => setSelectedImage((p) => (p < images.length - 1 ? p + 1 : 0))}
-                    sx={{
-                      position: "absolute",
-                      right: 8,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      bgcolor: "rgba(255,255,255,0.85)",
-                      "&:hover": { bgcolor: "white" },
-                    }}
-                  >
-                    <ChevronRight />
-                  </IconButton>
-                </>
-              )}
-            </Box>
-
-            {/* Thumbnail strip */}
-            {images.length > 1 && (
-              <Stack direction="row" spacing={1.5} sx={{ mt: 2, justifyContent: "center" }}>
-                {images.map((img, i) => (
-                  <Box
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    sx={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 2,
-                      overflow: "hidden",
-                      position: "relative",
-                      cursor: "pointer",
-                      border: selectedImage === i ? "2px solid" : "2px solid transparent",
-                      borderColor: selectedImage === i ? "primary.main" : "transparent",
-                      bgcolor: "white",
-                      transition: "0.2s",
-                      "&:hover": { borderColor: "primary.light" },
-                    }}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.name} thumbnail ${i + 1}`}
-                      fill
-                      style={{ objectFit: "contain", padding: "4px" }}
-                    />
-                  </Box>
-                ))}
-              </Stack>
-            )}
+            <ProductImageGallery images={images} productName={product.name} />
           </Grid>
 
-          {/* Product Info */}
           <Grid size={{ xs: 12, md: 6 }}>
-            {/* Category + Brand */}
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
               {product.category?.name && (
                 <Chip
@@ -233,7 +112,6 @@ export default function ProductDetailPage() {
               {product.name}
             </Typography>
 
-            {/* Price */}
             <Typography
               variant="h3"
               fontWeight={900}
@@ -245,7 +123,6 @@ export default function ProductDetailPage() {
               ${parseFloat(product.price).toLocaleString()}
             </Typography>
 
-            {/* Stock */}
             <Chip
               label={inStock ? "En stock" : "Agotado"}
               size="small"
@@ -253,7 +130,6 @@ export default function ProductDetailPage() {
               sx={{ fontWeight: 700, mb: 3 }}
             />
 
-            {/* Description */}
             {product.description && (
               <Typography
                 variant="body1"
@@ -264,39 +140,8 @@ export default function ProductDetailPage() {
               </Typography>
             )}
 
-            {/* Add to cart */}
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<AddShoppingCartOutlined />}
-                disabled={!inStock}
-                onClick={() => addItem({ productId: product.id })}
-                sx={{
-                  borderRadius: 3,
-                  textTransform: "none",
-                  fontWeight: 800,
-                  fontSize: 16,
-                  px: 4,
-                  py: 1.5,
-                  boxShadow: "0 4px 14px rgba(14, 165, 233, 0.35)",
-                  "&:hover": { boxShadow: "0 6px 20px rgba(14, 165, 233, 0.45)" },
-                }}
-              >
-                Agregar al carrito
-              </Button>
+            <AddToCartSection productId={product.id} inStock={inStock} />
 
-              {quantityInCart > 0 && (
-                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: "success.main" }}>
-                  <CheckCircleOutline sx={{ fontSize: 20 }} />
-                  <Typography variant="body2" fontWeight={700}>
-                    {quantityInCart > 99 ? "+99" : quantityInCart} en el carrito
-                  </Typography>
-                </Stack>
-              )}
-            </Stack>
-
-            {/* Trust badges */}
             <Box
               sx={{
                 bgcolor: "white",

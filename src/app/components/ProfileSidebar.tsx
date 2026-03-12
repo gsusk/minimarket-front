@@ -1,5 +1,4 @@
 "use client"
-import React from 'react'
 import {
   Paper,
   Typography,
@@ -7,7 +6,6 @@ import {
   Box,
   Button,
   Divider,
-  Stack,
   useTheme,
   Chip,
   ListItem,

@@ -9,14 +9,16 @@ export default function ProductImageGallery({ images, productName }: { images: s
   const [selectedImage, setSelectedImage] = useState(0);
 
   return (
-    <>
+    <Box sx={{ position: { md: "sticky" }, top: { md: 24 } }}>
       <Box
         sx={{
           position: "relative",
           bgcolor: "white",
           borderRadius: 4,
           overflow: "hidden",
-          pt: "100%",
+          width: "100%",
+          pt: { xs: "80%", sm: "75%", md: "100%" },
+          maxHeight: { xs: 350, sm: 400, md: "none" },
           boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
         }}
       >
@@ -24,9 +26,10 @@ export default function ProductImageGallery({ images, productName }: { images: s
           src={images[selectedImage]}
           alt={productName}
           fill
+          sizes="(max-width: 600px) 100vw, (max-width: 900px) 100vw, 50vw"
           style={{
             objectFit: "contain",
-            padding: "32px",
+            padding: "24px",
             mixBlendMode: "multiply",
           }}
           priority
@@ -36,6 +39,7 @@ export default function ProductImageGallery({ images, productName }: { images: s
           <>
             <IconButton
               onClick={() => setSelectedImage((p) => (p > 0 ? p - 1 : images.length - 1))}
+              size="small"
               sx={{
                 position: "absolute",
                 left: 8,
@@ -49,6 +53,7 @@ export default function ProductImageGallery({ images, productName }: { images: s
             </IconButton>
             <IconButton
               onClick={() => setSelectedImage((p) => (p < images.length - 1 ? p + 1 : 0))}
+              size="small"
               sx={{
                 position: "absolute",
                 right: 8,
@@ -65,14 +70,24 @@ export default function ProductImageGallery({ images, productName }: { images: s
       </Box>
 
       {images.length > 1 && (
-        <Stack direction="row" spacing={1.5} sx={{ mt: 2, justifyContent: "center" }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            mt: 2,
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
           {images.map((img, i) => (
             <Box
               key={i}
               onClick={() => setSelectedImage(i)}
               sx={{
-                width: 64,
-                height: 64,
+                width: { xs: 48, sm: 56, md: 64 },
+                height: { xs: 48, sm: 56, md: 64 },
+                flexShrink: 0,
                 borderRadius: 2,
                 overflow: "hidden",
                 position: "relative",
@@ -94,6 +109,6 @@ export default function ProductImageGallery({ images, productName }: { images: s
           ))}
         </Stack>
       )}
-    </>
+    </Box>
   );
 }

@@ -66,9 +66,9 @@ export default async function ProductDetailPage({ params }: { params: PageParams
   const inStock = product.stock > 0;
 
   return (
-    <Box bgcolor="grey.100" minHeight="100vh" pb={8}>
-      <Container maxWidth="lg" sx={{ pt: 3 }}>
-        <Breadcrumbs sx={{ mb: 3, fontSize: 14 }}>
+    <Box bgcolor="grey.100" minHeight="100vh" pb={{ xs: 4, md: 8 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 }, px: { xs: 2, sm: 3 } }}>
+        <Breadcrumbs sx={{ mb: { xs: 2, md: 3 }, fontSize: 14, mt: 3 }}>
           <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
             Inicio
           </Link>
@@ -77,12 +77,12 @@ export default async function ProductDetailPage({ params }: { params: PageParams
               {product.category.fullPath}
             </Typography>
           )}
-          <Typography color="text.primary" fontSize={14} fontWeight={600}>
+          <Typography color="text.primary" fontSize={14} fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
             {product.name}
           </Typography>
         </Breadcrumbs>
 
-        <Grid container spacing={5}>
+        <Grid container spacing={{ xs: 3, md: 5 }}>
           <Grid size={{ xs: 12, md: 6 }}>
             <ProductImageGallery images={images} productName={product.name} />
           </Grid>
@@ -108,7 +108,11 @@ export default async function ProductDetailPage({ params }: { params: PageParams
               )}
             </Stack>
 
-            <Typography variant="h4" fontWeight={900} sx={{ lineHeight: 1.2, mb: 2, color: "grey.900" }}>
+            <Typography
+              variant="h4"
+              fontWeight={900}
+              sx={{ lineHeight: 1.2, mb: 2, color: "grey.900", fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}
+            >
               {product.name}
             </Typography>
 
@@ -118,6 +122,7 @@ export default async function ProductDetailPage({ params }: { params: PageParams
               sx={{
                 color: "primary.dark",
                 mb: 1,
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '3rem' },
               }}
             >
               ${parseFloat(product.price).toLocaleString()}

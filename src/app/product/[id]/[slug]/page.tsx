@@ -7,12 +7,14 @@ import {
   Chip,
   Breadcrumbs,
   Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import {
   ArrowBack,
-  LocalShippingOutlined,
-  VerifiedOutlined,
-  SupportAgentOutlined,
+  ExpandMore,
+  DescriptionOutlined,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -66,9 +68,9 @@ export default async function ProductDetailPage({ params }: { params: PageParams
   const inStock = product.stock > 0;
 
   return (
-    <Box bgcolor="grey.100" minHeight="100vh" pb={{ xs: 4, md: 8 }}>
-      <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 }, px: { xs: 2, sm: 3 } }}>
-        <Breadcrumbs sx={{ mb: { xs: 2, md: 3 }, fontSize: 14, mt: 3 }}>
+    <Box bgcolor="#fff" minHeight="100vh" pb={{ xs: 8, md: 12 }} >
+      <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 4 }, px: { xs: 2, sm: 4 } }}>
+        <Breadcrumbs sx={{ mb: { xs: 4, md: 6 }, fontSize: 14, mt: 2 }}>
           <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
             Inicio
           </Link>
@@ -109,20 +111,27 @@ export default async function ProductDetailPage({ params }: { params: PageParams
             </Stack>
 
             <Typography
-              variant="h4"
-              fontWeight={900}
-              sx={{ lineHeight: 1.2, mb: 2, color: "grey.900", fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' } }}
+              variant="h1"
+              fontWeight={800}
+              sx={{
+                lineHeight: 1.1,
+                mb: 2,
+                color: "grey.900",
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                letterSpacing: "-0.02em"
+              }}
             >
               {product.name}
             </Typography>
 
             <Typography
-              variant="h3"
-              fontWeight={900}
+              variant="h2"
+              fontWeight={600}
               sx={{
-                color: "primary.dark",
-                mb: 1,
-                fontSize: { xs: '1.75rem', sm: '2rem', md: '3rem' },
+                color: "text.primary",
+                mb: 3,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
+                letterSpacing: "-0.02em"
               }}
             >
               ${parseFloat(product.price).toLocaleString()}
@@ -147,35 +156,20 @@ export default async function ProductDetailPage({ params }: { params: PageParams
 
             <AddToCartSection productId={product.id} inStock={inStock} />
 
-            <Box
-              sx={{
-                bgcolor: "white",
-                borderRadius: 3,
-                p: 2.5,
-                mt: 2,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-              }}
-            >
-              <Stack spacing={2}>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <LocalShippingOutlined sx={{ color: "primary.main" }} />
-                  <Typography variant="body2" fontWeight={600}>
-                    Envío rápido disponible
+            <Box sx={{ mt: 5 }}>
+              <Accordion elevation={0} sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid', borderColor: 'grey.200' }}>
+                <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 0 }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <DescriptionOutlined sx={{ color: "primary.main" }} />
+                    <Typography fontWeight={600} fontSize={16}>Detalles Adicionales</Typography>
+                  </Stack>
+                </AccordionSummary>
+                <AccordionDetails sx={{ px: 0, pb: 2, color: "text.secondary" }}>
+                  <Typography variant="body2" lineHeight={1.6}>
+                    Este producto ha sido verificado en nuestro centro de calidad para asegurar que cumple con todos los estándares especificados por la marca. Empaque original garantizado.
                   </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <VerifiedOutlined sx={{ color: "success.main" }} />
-                  <Typography variant="body2" fontWeight={600}>
-                    Producto 100% original
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <SupportAgentOutlined sx={{ color: "secondary.main" }} />
-                  <Typography variant="body2" fontWeight={600}>
-                    Soporte al cliente 24/7
-                  </Typography>
-                </Stack>
-              </Stack>
+                </AccordionDetails>
+              </Accordion>
             </Box>
           </Grid>
         </Grid>

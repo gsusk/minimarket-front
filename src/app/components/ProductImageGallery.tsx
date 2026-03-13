@@ -13,13 +13,13 @@ export default function ProductImageGallery({ images, productName }: { images: s
       <Box
         sx={{
           position: "relative",
-          bgcolor: "white",
+          bgcolor: "#f8f9fa",
           borderRadius: 4,
           overflow: "hidden",
           width: "100%",
-          pt: { xs: "80%", sm: "75%", md: "100%" },
-          maxHeight: { xs: 350, sm: 400, md: "none" },
-          boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+          pt: { xs: "100%", sm: "85%", md: "110%" },
+          border: "1px solid",
+          borderColor: "grey.100",
         }}
       >
         <Image
@@ -85,18 +85,19 @@ export default function ProductImageGallery({ images, productName }: { images: s
               key={i}
               onClick={() => setSelectedImage(i)}
               sx={{
-                width: { xs: 48, sm: 56, md: 64 },
-                height: { xs: 48, sm: 56, md: 64 },
+                width: { xs: 56, sm: 72 },
+                height: { xs: 56, sm: 72 },
                 flexShrink: 0,
                 borderRadius: 2,
                 overflow: "hidden",
                 position: "relative",
                 cursor: "pointer",
-                border: selectedImage === i ? "2px solid" : "2px solid transparent",
-                borderColor: selectedImage === i ? "primary.main" : "transparent",
-                bgcolor: "white",
-                transition: "0.2s",
-                "&:hover": { borderColor: "primary.light" },
+                border: "2px solid",
+                borderColor: selectedImage === i ? "text.primary" : "transparent",
+                bgcolor: "#f8f9fa",
+                opacity: selectedImage === i ? 1 : 0.5,
+                transition: "all 0.2s ease",
+                "&:hover": { opacity: 1 },
               }}
             >
               <Image

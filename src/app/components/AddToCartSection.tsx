@@ -9,7 +9,7 @@ export default function AddToCartSection({ productId, inStock }: { productId: nu
   const quantityInCart = items.find((item) => item.productId === productId)?.quantity ?? 0;
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center" sx={{ mb: 3 }}>
       <Button
         variant="contained"
         size="large"
@@ -17,14 +17,22 @@ export default function AddToCartSection({ productId, inStock }: { productId: nu
         disabled={!inStock}
         onClick={() => addItem({ productId })}
         sx={{
-          borderRadius: 3,
+          borderRadius: "99px",
           textTransform: "none",
-          fontWeight: 800,
-          fontSize: 16,
-          px: 4,
+          fontWeight: 700,
+          fontSize: "1.1rem",
+          px: 5,
           py: 1.5,
+          width: { xs: "100%", sm: "auto" },
+          bgcolor: "primary.main",
+          color: "white",
           boxShadow: "0 4px 14px rgba(14, 165, 233, 0.35)",
-          "&:hover": { boxShadow: "0 6px 20px rgba(14, 165, 233, 0.45)" },
+          "&:hover": { bgcolor: "primary.dark", boxShadow: "0 6px 20px rgba(14, 165, 233, 0.45)", transform: "translateY(-2px)" },
+          transition: "all 0.2s ease",
+          "&.Mui-disabled": {
+            bgcolor: "grey.200",
+            color: "grey.400",
+          }
         }}
       >
         Agregar al carrito

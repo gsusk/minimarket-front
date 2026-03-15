@@ -25,7 +25,7 @@ export default async function Search({ searchParams }: { searchParams: searchPar
     ])
   ) as Record<string, string>;
 
-  if (!filters.q && !filters.category || filters.q?.trim() === "" && filters.category?.trim()) {
+  if (!filters.q && !filters.category || filters.q?.trim() === "" && filters.category?.trim() == "") {
     redirect("/")
   }
   try {

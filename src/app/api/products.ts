@@ -13,7 +13,7 @@ export type Product = {
 
 export type CategorySummary = {
   id: number,
-  name: string,
+  categoryName: string,
   fullPath: string,
   parentName: string | null,
 }

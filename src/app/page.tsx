@@ -16,7 +16,7 @@ async function fetchFeaturedProducts(): Promise<Product[]> {
       id: p.id,
       name: p.name,
       slug: p.slug,
-      category: p.category?.name ?? "",
+      category: p.category?.categoryName ?? "",
       price: parseFloat(p.price),
       brand: p.brand,
       creationDate: p.listedAt,

@@ -98,9 +98,9 @@ export default async function ProductDetailPage({ params }: { params: PageParams
 
           <Grid size={{ xs: 12, md: 6 }}>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-              {product.category?.name && (
+              {product.category?.categoryName && (
                 <Chip
-                  label={product.category.name}
+                  label={product.category.categoryName}
                   size="small"
                   color="primary"
                   variant="outlined"

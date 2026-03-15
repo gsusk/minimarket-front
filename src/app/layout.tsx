@@ -6,6 +6,7 @@ import Providers from "./providers";
 import Header from "./components/Header";
 import SubNavbar from "./components/SubNavbar";
 import Footer from "./components/Footer";
+import { CategorySummary } from "./api/products";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log("ssssdd");
+
   return (
     <html lang="en">
       <body

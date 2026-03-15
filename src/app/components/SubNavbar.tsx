@@ -1,11 +1,20 @@
-import { Box, Typography, Container, Link } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
+import Link from 'next/link';
+import { CategorySummary } from '../api/products';
 
-const categories = [
-  'All Products', 'Smartphones', 'Laptops', 'Watches', 'Audio',
-  'Gaming', 'TV & Video', 'Appliances', 'Accessories'
-];
+export default async function SubNavbar() {
+  let categories: CategorySummary[] = [];
+  try {
+    const res = await fetch("http://localhost:8080/categories/featured", {
+      next: { revalidate: 3600 * 24 }
+    })
+    if (res.ok) {
+      categories = await res.json() as CategorySummary[]
+    }
+  } catch (err) {
+    console.error(err)
+  }
 
-export default function SubNavbar() {
   return (
     <Box
       sx={{
@@ -31,22 +40,24 @@ export default function SubNavbar() {
           }}
         >
           {categories.map((cat) => (
-            <Typography
-              key={cat}
-              variant="body2"
-              sx={{
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                color: 'text.secondary',
-                cursor: 'pointer',
-                transition: 'color 0.2s',
-                '&:hover': {
-                  color: 'primary.main'
-                }
-              }}
-            >
-              {cat}
-            </Typography>
+            <Link key={cat.id} href={`/search?category=${cat.categoryName}`} passHref >
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  color: 'text.secondary',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s',
+                  textDecoration: 'none',
+                  '&:hover': {
+                    color: 'primary.main'
+                  }
+                }}
+              >
+                {cat.categoryName}
+              </Typography>
+            </Link>
           ))}
         </Box>
       </Container>

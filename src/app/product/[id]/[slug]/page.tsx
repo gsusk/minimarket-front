@@ -10,11 +10,18 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
 } from "@mui/material";
 import {
   ArrowBack,
   ExpandMore,
   DescriptionOutlined,
+  InfoOutlined,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -156,7 +163,36 @@ export default async function ProductDetailPage({ params }: { params: PageParams
 
             <AddToCartSection productId={product.id} inStock={inStock} />
 
-            <Box sx={{ mt: 5 }}>
+            {product.attributes && Object.keys(product.attributes).length > 0 && (
+              <Box sx={{ mt: 5 }}>
+                <Accordion elevation={0} defaultExpanded sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid', borderColor: 'grey.200' }}>
+                  <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 0 }}>
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <InfoOutlined sx={{ color: "primary.main" }} />
+                      <Typography fontWeight={600} fontSize={16}>Especificaciones</Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ px: 0, pb: 2 }}>
+                    <TableContainer component={Paper} elevation={0} variant="outlined">
+                      <Table size="small">
+                        <TableBody>
+                          {Object.entries(product.attributes).map(([key, value]) => (
+                            <TableRow key={key}>
+                              <TableCell component="th" scope="row" sx={{ fontWeight: 600, color: 'text.secondary', width: '40%', textTransform: 'capitalize' }}>
+                                {key.replace(/_/g, ' ')}
+                              </TableCell>
+                              <TableCell>{String(value)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            )}
+
+            <Box sx={{ mt: product.attributes && Object.keys(product.attributes).length > 0 ? 0 : 5 }}>
               <Accordion elevation={0} sx={{ '&:before': { display: 'none' }, borderBottom: '1px solid', borderColor: 'grey.200' }}>
                 <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 0 }}>
                   <Stack direction="row" spacing={1.5} alignItems="center">

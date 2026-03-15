@@ -29,6 +29,7 @@ export type DetailedProduct = {
   stock: number,
   images: string[],
   listedAt: string,
+  attributes: Record<string, string | number | boolean>
 }
 
 export type FacetValue = {

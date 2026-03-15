@@ -111,11 +111,12 @@ export default function SearchFilterSideBar({
   };
 
   const dynamicFacetKeys = Object.keys(facets ?? [])
-    .filter(key => key !== 'brand')
+    .filter(key => key !== 'brand' && key !== 'marca' && key !== 'category')
     .sort();
 
   return (
     <Stack spacing={3}>
+      {renderFacet("Categoría", "category")}
       {renderFacet("Marca", "brand")}
 
       {(minPrice || maxPrice) && (

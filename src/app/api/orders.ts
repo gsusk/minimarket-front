@@ -42,3 +42,10 @@ export async function getOrderDetails(orderId: string): Promise<OrderSummary> {
 
   return response.data;
 }
+
+export async function getOrders(): Promise<OrderSummary[]> {
+  const response = await api.get<OrderSummary[]>("/orders", {
+    withCredentials: true,
+  })
+  return response.data
+}

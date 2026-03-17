@@ -21,15 +21,8 @@ import { Add, Close, DeleteOutline, Remove, ShoppingBagOutlined, WifiOff } from 
 import { useCart } from "./CartProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { CART_QUERY_KEY } from "./CartProvider";
+import { toNumber, toCurrency } from "../utils/format";
 
-function toCurrency(value: number) {
-  return value.toLocaleString();
-}
-
-function toNumber(value: string): number {
-  const parsedValue = Number(value);
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
-}
 
 export default function CartDrawer() {
   const {

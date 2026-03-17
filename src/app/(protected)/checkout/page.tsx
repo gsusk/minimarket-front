@@ -14,7 +14,6 @@ import {
   InputAdornment,
 } from "@mui/material";
 import {
-  LocalShipping,
   CreditCard,
   Lock,
   ShoppingBag,
@@ -25,15 +24,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { processCheckout, CheckoutRequest } from "../../api/checkout";
 import { useCart, CART_QUERY_KEY } from "../../components/CartProvider";
+import { toNumber, toCurrency } from "../../utils/format";
 
-function toCurrency(value: number) {
-  return value.toLocaleString("es-CO", { minimumFractionDigits: 0 });
-}
-
-function toNumber(value: string | number): number {
-  const parsedValue = Number(value);
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
-}
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {

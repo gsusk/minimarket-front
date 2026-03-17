@@ -13,6 +13,7 @@ import {
   updateCartItemQuantity,
 } from "../api/cart";
 import { AppError } from "../utils/errors";
+import { toNumber } from "../utils/format";
 
 type CartProductInput = Product | Pick<ShoppingCartItem, "productId">;
 
@@ -40,11 +41,6 @@ export const CART_QUERY_KEY = ["cart"] as const;
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-function toNumber(value: string): number {
-  const parsedValue = Number(value);
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
-}
-
 function getProductId(product: CartProductInput): number {
   return "id" in product ? product.id : product.productId;
 }
@@ -52,7 +48,7 @@ function getProductId(product: CartProductInput): number {
 function getErrorMessage(err: unknown): string {
   if (err instanceof AppError) return err.message;
   if (err instanceof Error) return err.message;
-  return "Ocurrió un error inesperado";
+  return "Ocurrio un error inesperado";
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {

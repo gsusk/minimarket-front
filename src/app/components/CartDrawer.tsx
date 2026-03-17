@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   Alert,
   Avatar,
@@ -47,6 +48,12 @@ export default function CartDrawer() {
   } = useCart();
 
   const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const handleCheckout = () => {
+    closeCart();
+    router.replace("/checkout");
+  };
 
   const handleRetry = () => {
     queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
@@ -180,8 +187,12 @@ export default function CartDrawer() {
             <Button variant="outlined" color="inherit" fullWidth onClick={clearCart}>
               Vaciar carrito
             </Button>
-            <Button variant="contained" fullWidth onClick={closeCart}>
-              Seguir comprando
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleCheckout}
+            >
+              Proceder al pago
             </Button>
           </Stack>
         </Box>

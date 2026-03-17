@@ -22,6 +22,7 @@ type CartContextValue = {
   total: number;
   isCartOpen: boolean;
   isLoading: boolean;
+  isLocked: boolean;
   cartError: string | null;
   mutationError: string | null;
   clearMutationError: () => void;
@@ -31,6 +32,8 @@ type CartContextValue = {
   clearCart: () => Promise<void>;
   openCart: () => void;
   closeCart: () => void;
+  lockCart: () => void;
+  unlockCart: () => void;
 };
 
 export const CART_QUERY_KEY = ["cart"] as const;
@@ -54,6 +57,7 @@ function getErrorMessage(err: unknown): string {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -106,12 +110,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   });
 
   const addItem = (product: CartProductInput) => {
+    if (isLocked) return;
     const productId = getProductId(product);
     setIsCartOpen(true);
     addItemMutation.mutate({ productId, quantity: 1 });
   };
 
   const removeItem = (productId: number) => {
+    if (isLocked) return;
     const currentItem = cart.shoppingCartItems.find((item) => item.productId === productId);
 
     if (!currentItem) {
@@ -127,10 +133,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteItem = (productId: number) => {
+    if (isLocked) return;
     deleteItemMutation.mutate(productId);
   };
 
   const clearCart = async () => {
+    if (isLocked) return;
     for (const item of cart.shoppingCartItems) {
       await deleteItemMutation.mutateAsync(item.productId);
     }
@@ -147,6 +155,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         total,
         isCartOpen,
         isLoading: isCartLoading || (isCartFetching && cart.shoppingCartItems.length === 0),
+        isLocked,
         cartError,
         mutationError,
         clearMutationError: () => setMutationError(null),
@@ -156,6 +165,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         openCart: () => setIsCartOpen(true),
         closeCart: () => setIsCartOpen(false),
+        lockCart: () => setIsLocked(true),
+        unlockCart: () => setIsLocked(false),
       }}
     >
       {children}

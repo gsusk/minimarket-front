@@ -146,7 +146,6 @@ export default function AdminCategoriesPage() {
         )}
       </Paper>
 
-      {/* Create dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>Nueva categoria</DialogTitle>
         <DialogContent dividers>

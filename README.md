@@ -1,1 +1,1 @@
-Frontend para el proyecto minamarket ADSO
+Frontend para el proyecto

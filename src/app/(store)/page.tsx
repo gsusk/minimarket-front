@@ -1,8 +1,9 @@
 import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
-import HeroSlider from "./components/HeroSlider";
-import TrustBar from "./components/TrustBar";
-import ProductCard from "./components/ProductCard";
-import { DetailedProduct, Product } from "./api/products";
+import HeroSlider from "../components/HeroSlider";
+import TrustBar from "../components/TrustBar";
+import ProductCard from "../components/ProductCard";
+import { DetailedProduct, Product } from "../api/products";
+
 
 async function fetchFeaturedProducts(): Promise<Product[]> {
   try {

@@ -3,10 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import Providers from "./providers";
-import Header from "./components/Header";
-import SubNavbar from "./components/SubNavbar";
-import Footer from "./components/Footer";
-import { CategorySummary } from "./api/products";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,32 +15,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ADSO",
-  description: "frontend para el proyecto de adso",
+  title: "Minimarket",
+  description: "tienda en linea",
 };
-/**
- * 
- * TODO:
- * - Prevenir parpadeo al carga la pagina
- */
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="es">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AppRouterCacheProvider>
-          <Providers>
-            <Header></Header>
-            <SubNavbar></SubNavbar>
-            {children}
-            <Footer></Footer>
-          </Providers>
+          <Providers>{children}</Providers>
         </AppRouterCacheProvider>
       </body>
     </html>

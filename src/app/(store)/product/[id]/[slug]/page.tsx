@@ -25,9 +25,9 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DetailedProduct } from "../../../api/products";
-import ProductImageGallery from "../../../components/ProductImageGallery";
-import AddToCartSection from "../../../components/AddToCartSection";
+import { DetailedProduct } from "../../../../api/products";
+import ProductImageGallery from "../../../../components/ProductImageGallery";
+import AddToCartSection from "../../../../components/AddToCartSection";
 
 type PageParams = Promise<{ id: string; slug: string }>;
 

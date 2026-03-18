@@ -26,8 +26,12 @@ export default function LoginPage() {
       localStorage.setItem('access_token', data.accessToken);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       await queryClient.invalidateQueries({ queryKey: ["cart"] });
-      queryClient.prefetchQuery({ queryKey: ["me"], queryFn: userMe });
-      router.replace('/');
+      const me = await queryClient.fetchQuery({ queryKey: ["me"], queryFn: userMe });
+      if (me?.role === "ADMIN") {
+        router.replace('/admin');
+      } else {
+        router.replace('/');
+      }
     },
     onError: (error: AppError) => {
       const formikErrors: Record<string, string> = {};

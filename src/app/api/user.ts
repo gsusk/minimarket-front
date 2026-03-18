@@ -5,7 +5,8 @@ export type BasicUser = {
   id: number,
   firstName: string,
   lastName: string,
-  email: string
+  email: string,
+  role: "USER" | "ADMIN",
 }
 
 export type UserProfile = {

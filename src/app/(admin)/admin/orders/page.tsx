@@ -3,7 +3,6 @@
 import {
   Box,
   Typography,
-  Paper,
   Stack,
   Divider,
   Chip,
@@ -58,10 +57,10 @@ export default function AdminOrdersPage() {
   return (
     <Box>
       <Box mb={4}>
-        <Typography variant="h5" fontWeight={800} letterSpacing={-0.5}>
+        <Typography variant="h4" fontWeight={900} letterSpacing={-1.5}>
           Ordenes
         </Typography>
-        <Typography variant="body2" color="text.secondary" mt={0.5}>
+        <Typography variant="body2" color="text.disabled" mt={0.5}>
           Registro completo de todas las ordenes del sistema
         </Typography>
       </Box>
@@ -98,14 +97,13 @@ export default function AdminOrdersPage() {
         </FormControl>
       </Stack>
 
-      <Paper
-        elevation={0}
-        sx={{ borderRadius: 2, border: "1px solid", borderColor: "grey.200", bgcolor: "background.paper", overflow: "hidden" }}
+      <Box
+        sx={{ borderRadius: 3, border: "1px solid rgba(0,0,0,0.07)", bgcolor: "white", overflow: "hidden" }}
       >
-        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid", borderColor: "grey.100", bgcolor: "grey.50" }}>
+        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.5}>
-              {filtered.length} {filtered.length === 1 ? "ORDEN" : "ORDENES"}
+            <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
+              {filtered.length} {filtered.length === 1 ? "orden" : "ordenes"}
             </Typography>
           </Stack>
         </Box>
@@ -155,7 +153,7 @@ export default function AdminOrdersPage() {
             </Box>
           ))
         )}
-      </Paper>
+      </Box>
     </Box>
   );
 }

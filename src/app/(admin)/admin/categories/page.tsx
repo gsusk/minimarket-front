@@ -3,7 +3,6 @@
 import {
   Box,
   Typography,
-  Paper,
   Stack,
   TextField,
   Button,
@@ -57,8 +56,8 @@ export default function AdminCategoriesPage() {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
-          <Typography variant="h5" fontWeight={800} letterSpacing={-0.5}>Categorias</Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.5}>
+          <Typography variant="h4" fontWeight={900} letterSpacing={-1.5}>Categorias</Typography>
+          <Typography variant="body2" color="text.disabled" mt={0.5}>
             Estructura jerarquica del catalogo
           </Typography>
         </Box>
@@ -78,13 +77,12 @@ export default function AdminCategoriesPage() {
         </Alert>
       )}
 
-      <Paper
-        elevation={0}
-        sx={{ borderRadius: 2, border: "1px solid", borderColor: "grey.200", bgcolor: "background.paper", overflow: "hidden", mb: 3 }}
+      <Box
+        sx={{ borderRadius: 3, border: "1px solid rgba(0,0,0,0.07)", bgcolor: "white", overflow: "hidden", mb: 3 }}
       >
-        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid", borderColor: "grey.100", bgcolor: "grey.50" }}>
-          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.5}>
-            CATEGORIAS PRINCIPALES
+        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
+            Categorias principales
           </Typography>
         </Box>
         {isLoading ? (
@@ -109,15 +107,14 @@ export default function AdminCategoriesPage() {
             </Box>
           ))
         )}
-      </Paper>
+      </Box>
 
-      <Paper
-        elevation={0}
-        sx={{ borderRadius: 2, border: "1px solid", borderColor: "grey.200", bgcolor: "background.paper", overflow: "hidden" }}
+      <Box
+        sx={{ borderRadius: 3, border: "1px solid rgba(0,0,0,0.07)", bgcolor: "white", overflow: "hidden" }}
       >
-        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid", borderColor: "grey.100", bgcolor: "grey.50" }}>
-          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.5}>
-            SUBCATEGORIAS
+        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
+            Subcategorias
           </Typography>
         </Box>
         {isLoading ? (
@@ -144,7 +141,7 @@ export default function AdminCategoriesPage() {
             </Box>
           ))
         )}
-      </Paper>
+      </Box>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>Nueva categoria</DialogTitle>

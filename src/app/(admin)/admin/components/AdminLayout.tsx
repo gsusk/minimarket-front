@@ -4,16 +4,12 @@ import { useState } from "react";
 import {
   Box,
   Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Divider,
   Typography,
   IconButton,
   Stack,
   useMediaQuery,
   useTheme,
+  Tooltip,
 } from "@mui/material";
 import {
   DashboardOutlined,
@@ -22,12 +18,12 @@ import {
   CategoryOutlined,
   StorefrontOutlined,
   Menu as MenuIcon,
-  ChevronLeft,
-  KeyboardArrowLeft,
+  ArrowBackOutlined,
+  Close,
 } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 
-const SIDEBAR_W = 240;
+const SIDEBAR_W = 220;
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: DashboardOutlined, href: "/admin" },
@@ -37,94 +33,168 @@ const NAV_ITEMS = [
   { label: "Categorias", icon: CategoryOutlined, href: "/admin/categories" },
 ];
 
+const ACCENT = "#6366f1";
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const go = (href: string) => {
-    router.push(href);
-    onNavigate?.();
-  };
+  const go = (href: string) => { router.push(href); onNavigate?.(); };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <Box sx={{ px: 2.5, py: 3, borderBottom: "1px solid", borderColor: "grey.200" }}>
-        <Typography variant="overline" color="text.disabled" letterSpacing={1.5} display="block" fontSize="0.65rem">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        bgcolor: "#0e0e0e",
+        color: "white",
+        userSelect: "none",
+      }}
+    >
+      <Box sx={{ px: 3, pt: 3.5, pb: 2.5 }}>
+        <Typography
+          variant="overline"
+          sx={{ color: "rgba(255,255,255,0.3)", letterSpacing: 2, fontSize: "0.6rem", display: "block" }}
+        >
           Panel de control
         </Typography>
-        <Typography variant="subtitle1" fontWeight={800} letterSpacing={-0.3}>
-          Minimarket Admin
+        <Typography
+          variant="h6"
+          fontWeight={800}
+          letterSpacing={-0.5}
+          sx={{ color: "white", lineHeight: 1.2, mt: 0.25 }}
+        >
+          Minimarket
         </Typography>
       </Box>
 
-      <List sx={{ px: 1, py: 1.5, flex: 1 }}>
+      <Box sx={{ mx: 3, height: "1px", bgcolor: "rgba(255,255,255,0.07)", mb: 1 }} />
+
+      <Box sx={{ flex: 1, px: 1.5, py: 1 }}>
         {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
           const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
           return (
-            <ListItemButton
+            <Box
               key={href}
               onClick={() => go(href)}
-              selected={active}
               sx={{
-                borderRadius: 1.5,
-                mb: 0.25,
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
                 px: 1.75,
-                py: 1,
-                "&.Mui-selected": {
-                  bgcolor: "grey.900",
-                  color: "white",
-                  "& .MuiListItemIcon-root": { color: "white" },
-                  "&:hover": { bgcolor: "grey.800" },
+                py: 1.1,
+                mb: 0.25,
+                borderRadius: 1.5,
+                cursor: "pointer",
+                transition: "background 0.15s",
+                bgcolor: active ? "rgba(99,102,241,0.15)" : "transparent",
+                "&:hover": {
+                  bgcolor: active ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.05)",
                 },
-                "&:hover:not(.Mui-selected)": { bgcolor: "grey.100" },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: active ? "white" : "text.secondary" }}>
-                <Icon sx={{ fontSize: 18 }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={label}
-                primaryTypographyProps={{ fontSize: "0.875rem", fontWeight: active ? 700 : 400 }}
+              {active && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    top: "20%",
+                    bottom: "20%",
+                    width: 3,
+                    borderRadius: 4,
+                    bgcolor: ACCENT,
+                  }}
+                />
+              )}
+              <Icon
+                sx={{
+                  fontSize: 18,
+                  color: active ? ACCENT : "rgba(255,255,255,0.4)",
+                  flexShrink: 0,
+                  transition: "color 0.15s",
+                }}
               />
-            </ListItemButton>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: active ? "white" : "rgba(255,255,255,0.5)",
+                  fontWeight: active ? 700 : 400,
+                  fontSize: "0.855rem",
+                  transition: "color 0.15s",
+                }}
+              >
+                {label}
+              </Typography>
+            </Box>
           );
         })}
-      </List>
+      </Box>
 
-      <Divider />
-      <Box sx={{ px: 2.5, py: 2 }}>
-        <ListItemButton
-          onClick={() => go("/")}
-          sx={{ borderRadius: 1.5, px: 1.75, py: 0.75, "&:hover": { bgcolor: "grey.100" } }}
+      <Box sx={{ mx: 3, height: "1px", bgcolor: "rgba(255,255,255,0.07)" }} />
+      <Box
+        onClick={() => go("/")}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          px: 3,
+          py: 2,
+          cursor: "pointer",
+          "&:hover .back-text": { color: "rgba(255,255,255,0.7)" },
+          "&:hover .back-icon": { color: "rgba(255,255,255,0.5)" },
+        }}
+      >
+        <ArrowBackOutlined className="back-icon" sx={{ fontSize: 15, color: "rgba(255,255,255,0.25)", transition: "color 0.15s" }} />
+        <Typography
+          className="back-text"
+          variant="caption"
+          sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.75rem", transition: "color 0.15s" }}
         >
-          <ListItemIcon sx={{ minWidth: 36, color: "text.disabled" }}>
-            <KeyboardArrowLeft sx={{ fontSize: 18 }} />
-          </ListItemIcon>
-          <ListItemText
-            primary="Volver a la tienda"
-            primaryTypographyProps={{ fontSize: "0.8rem", color: "text.secondary" }}
-          />
-        </ListItemButton>
+          Volver a la tienda
+        </Typography>
       </Box>
     </Box>
+  );
+}
+
+function MobileTopbar({ onOpen }: { onOpen: () => void }) {
+  return (
+    <Stack
+      direction="row"
+      alignItems="center"
+      sx={{
+        px: 2,
+        py: 1.25,
+        bgcolor: "#0e0e0e",
+        position: "sticky",
+        top: 0,
+        zIndex: 99,
+      }}
+    >
+      <IconButton onClick={onOpen} size="small" sx={{ color: "white", mr: 1.5 }}>
+        <MenuIcon sx={{ fontSize: 20 }} />
+      </IconButton>
+      <Typography variant="subtitle2" fontWeight={800} sx={{ color: "white", letterSpacing: -0.3 }}>
+        Minimarket
+      </Typography>
+    </Stack>
   );
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "grey.50" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f4" }}>
       {!isMobile && (
         <Box
           sx={{
             width: SIDEBAR_W,
             flexShrink: 0,
-            bgcolor: "background.paper",
-            borderRight: "1px solid",
-            borderColor: "grey.200",
             position: "fixed",
             top: 0,
             left: 0,
@@ -135,21 +205,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarContent />
         </Box>
       )}
-
-      {isMobile && (
-        <Drawer
-          open={mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          PaperProps={{ sx: { width: SIDEBAR_W } }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-            <IconButton onClick={() => setMobileOpen(false)} size="small">
-              <ChevronLeft />
-            </IconButton>
-          </Box>
-          <SidebarContent onNavigate={() => setMobileOpen(false)} />
-        </Drawer>
-      )}
+      <Drawer
+        open={open}
+        onClose={() => setOpen(false)}
+        PaperProps={{ sx: { width: SIDEBAR_W, border: "none" } }}
+      >
+        <Box sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}>
+          <IconButton onClick={() => setOpen(false)} size="small" sx={{ color: "rgba(255,255,255,0.4)" }}>
+            <Close sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
+        <SidebarContent onNavigate={() => setOpen(false)} />
+      </Drawer>
 
       <Box
         component="main"
@@ -161,31 +228,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           flexDirection: "column",
         }}
       >
-        {isMobile && (
-          <Stack
-            direction="row"
-            alignItems="center"
-            sx={{
-              px: 2,
-              py: 1.5,
-              bgcolor: "background.paper",
-              borderBottom: "1px solid",
-              borderColor: "grey.200",
-              position: "sticky",
-              top: 0,
-              zIndex: 99,
-            }}
-          >
-            <IconButton onClick={() => setMobileOpen(true)} size="small" sx={{ mr: 1 }}>
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="subtitle2" fontWeight={700}>
-              Minimarket Admin
-            </Typography>
-          </Stack>
-        )}
+        {isMobile && <MobileTopbar onOpen={() => setOpen(true)} />}
 
-        <Box sx={{ p: { xs: 2, md: 3 }, flex: 1 }}>
+        <Box sx={{ p: { xs: 2, md: 4 }, flex: 1 }}>
           {children}
         </Box>
       </Box>

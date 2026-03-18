@@ -201,8 +201,8 @@ export default function AdminProductsPage() {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
-          <Typography variant="h5" fontWeight={800} letterSpacing={-0.5}>Productos</Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.5}>Gestiona el catalogo de productos</Typography>
+          <Typography variant="h4" fontWeight={900} letterSpacing={-1.5}>Productos</Typography>
+          <Typography variant="body2" color="text.disabled" mt={0.5}>Gestiona el catalogo de productos</Typography>
         </Box>
         <Button
           variant="contained"
@@ -214,13 +214,10 @@ export default function AdminProductsPage() {
         </Button>
       </Stack>
 
-      <Paper
-        elevation={0}
-        sx={{ borderRadius: 2, border: "1px solid", borderColor: "grey.200", bgcolor: "background.paper", overflow: "hidden" }}
-      >
-        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid", borderColor: "grey.100", bgcolor: "grey.50" }}>
-          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.5}>
-            {products.length} PRODUCTOS
+      <Box sx={{ borderRadius: 3, border: "1px solid rgba(0,0,0,0.07)", bgcolor: "white", overflow: "hidden" }}>
+        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0,0,0,0.06)", bgcolor: "transparent" }}>
+          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
+            {products.length} productos
           </Typography>
         </Box>
 
@@ -265,7 +262,7 @@ export default function AdminProductsPage() {
             </Box>
           ))
         )}
-      </Paper>
+      </Box>
 
       <ProductDialog
         open={dialogOpen}

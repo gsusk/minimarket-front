@@ -97,6 +97,7 @@ export default function ProfileSidebar() {
                 component={Link}
                 href={item.path}
                 selected={isActive}
+                disabled={user?.role != "USER"}
                 sx={{
                   borderRadius: 2,
                   '&.Mui-selected': {

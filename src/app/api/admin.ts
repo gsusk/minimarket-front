@@ -9,7 +9,7 @@ export type CreateProductPayload = {
   price: number;
   categoryId: number;
   stock: number;
-  specifications: Record<string, string>;
+  specifications: Record<string, any>;
   images: string[];
 };
 

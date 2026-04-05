@@ -206,31 +206,33 @@ export default function CartDrawer() {
         },
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-        <Box>
-          <Typography variant="h6" fontWeight={800}>
-            Carrito
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {items.length === 0 ? "No hay productos agregados" : `${items.length} producto(s) distintos`}
-          </Typography>
-        </Box>
-        <IconButton onClick={closeCart} aria-label="Cerrar carrito">
-          <Close />
-        </IconButton>
-      </Stack>
+      <Box data-testid="cart-drawer" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Box>
+            <Typography variant="h6" fontWeight={800}>
+              Carrito
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {items.length === 0 ? "No hay productos agregados" : `${items.length} producto(s) distintos`}
+            </Typography>
+          </Box>
+          <IconButton onClick={closeCart} aria-label="Cerrar carrito">
+            <Close />
+          </IconButton>
+        </Stack>
 
-      <Collapse in={!!mutationError}>
-        <Alert
-          severity="error"
-          onClose={clearMutationError}
-          sx={{ mb: 2 }}
-        >
-          {mutationError}
-        </Alert>
-      </Collapse>
+        <Collapse in={!!mutationError}>
+          <Alert
+            severity="error"
+            onClose={clearMutationError}
+            sx={{ mb: 2 }}
+          >
+            {mutationError}
+          </Alert>
+        </Collapse>
 
-      {renderBody()}
+        {renderBody()}
+      </Box>
     </Drawer>
   );
 }

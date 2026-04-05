@@ -14,6 +14,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Card
       elevation={0}
+      data-testid="product-card"
       sx={{
         borderRadius: '20px',
         p: 1,

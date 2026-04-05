@@ -71,6 +71,7 @@ export default function LoginPage() {
             fullWidth
             id='email'
             name='email'
+            autoComplete='off'
             label="Correo Electrónico"
             value={formik.values.email}
             error={formik.touched.email && Boolean(formik.errors.email)}

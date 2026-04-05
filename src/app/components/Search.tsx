@@ -2,9 +2,9 @@
 import { SearchOutlined } from "@mui/icons-material"
 import { Autocomplete, TextField } from "@mui/material"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, Suspense } from "react"
 
-function Search() {
+function SearchContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(searchParams.get("q") || "")
@@ -32,24 +32,32 @@ function Search() {
         }}
         renderInput={(params) => (
           <TextField
+            data-testid="search-bar-textfield"
             color="primary"
             {...params}
             placeholder="Buscar"
             slotProps={{
               input: {
                 ...params.InputProps,
-                type: 'search',
                 sx: {
                   backgroundColor: "background.default",
-                  color: "text.primary"
+                  color: "text.primary",
                 },
-                startAdornment: <SearchOutlined></SearchOutlined>
-              },
+                startAdornment: <SearchOutlined></SearchOutlined>,
+              }
             }}
           />
         )}
       />
     </form>
+  )
+}
+
+function Search() {
+  return (
+    <Suspense fallback={<div style={{ flexGrow: 1, height: '40px' }} />}>
+      <SearchContent />
+    </Suspense>
   )
 }
 

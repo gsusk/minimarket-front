@@ -6,13 +6,13 @@ export default async function SubNavbar() {
   let categories: CategorySummary[] = [];
   try {
     const res = await fetch("http://localhost:8080/categories/featured", {
-      next: { revalidate: 3600 * 24 }
+      next: { revalidate: 3600 * 24 },
     })
     if (res.ok) {
       categories = await res.json() as CategorySummary[]
     }
   } catch (err) {
-    console.error(err)
+    console.log(err)
   }
 
   return (

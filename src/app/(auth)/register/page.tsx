@@ -14,7 +14,7 @@ const SignupSchema = Yup.object().shape({
   firstName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("First name is required."),
   lastName: Yup.string().trim().min(2, "Need to be at least 2 characters").required("Last name is required"),
   email: Yup.string().trim().email("Needs to be a valid email").required("Email is required."),
-  password: Yup.string().trim().min(6, "Password needs to be at least 6 characters").max(1024, "Too long").required("Passoword is required"),
+  password: Yup.string().trim().min(6, "Password needs to be at least 6 characters").max(1024, "Too long").required("Password is required"),
 })
 
 export default function RegisterPage() {
@@ -33,7 +33,7 @@ export default function RegisterPage() {
     },
     onError: (error: AppError) => {
       const formikErrors: Record<string, string> = {};
-
+      console.log(formikErrors)
       if (error instanceof ValidationError) {
         error.issues.forEach((issue) => {
           formikErrors[issue.field] = issue.message;
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         Completa tus datos para empezar tu experiencia.
       </Typography>
 
-      <Stack component={"form"} spacing={3} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit} onChange={() => setGeneralError(null)}>
+      <Stack component={"form"} noValidate spacing={3} maxWidth={{ xs: "370px", md: "400px", lg: "450px" }} onSubmit={formik.handleSubmit} onChange={() => setGeneralError(null)}>
         <Grid container spacing={{ xs: 3, md: 2 }}>
           <Grid size={{ xs: 12, md: 6 }} >
             <TextField
@@ -106,6 +106,7 @@ export default function RegisterPage() {
           id='email'
           label="Correo Electrónico"
           type="email"
+          autoComplete="off"
           placeholder='ejemplo@email.com'
           error={formik.touched.email && Boolean(formik.errors.email)}
           helperText={formik.touched.email && formik.errors.email ? formik.errors.email : ' '}

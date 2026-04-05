@@ -4,7 +4,7 @@ import { Product } from '../api/products'
 
 export default function ProductList({ products }: { products: Product[] }) {
   if (!products || products.length === 0) {
-    return <div>No products found</div>
+    return <div>No se hallaron resultados</div>
   }
 
   return (

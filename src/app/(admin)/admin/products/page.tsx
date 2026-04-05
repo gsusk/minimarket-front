@@ -59,24 +59,71 @@ function ProductDialog({
   error: string | null;
 }) {
   const [form, setForm] = useState<CreateProductPayload>(initial);
-  const [specsRaw, setSpecsRaw] = useState(
-    initial.specifications ? JSON.stringify(initial.specifications, null, 2) : "{}"
+  const [specs, setSpecs] = useState<{ key: string; value: string; type: "text" | "number" }[]>(
+    Object.entries(initial.specifications || {}).map(([key, value]) => ({
+      key,
+      value: String(value),
+      type: typeof value === "number" ? "number" : "text"
+    }))
   );
   const [imagesRaw, setImagesRaw] = useState((initial.images ?? []).join("\n"));
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  const set = (k: keyof CreateProductPayload, v: unknown) =>
+  const set = (k: keyof CreateProductPayload, v: unknown) => {
     setForm((prev) => ({ ...prev, [k]: v }));
+    if (errors[k]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[k];
+        return next;
+      });
+    }
+  };
+
+  const handleAddSpec = () => {
+    setSpecs([...specs, { key: "", value: "", type: "text" }]);
+  };
+
+  const handleRemoveSpec = (index: number) => {
+    setSpecs(specs.filter((_, i) => i !== index));
+  };
+
+  const handleSpecChange = (index: number, field: "key" | "value" | "type", value: string) => {
+    const newSpecs = [...specs];
+    // @ts-ignore
+    newSpecs[index][field] = value;
+    setSpecs(newSpecs);
+  };
+
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "El nombre es requerido";
+    if (!form.brand.trim()) newErrors.brand = "La marca es requerida";
+    if (form.price <= 0) newErrors.price = "El precio debe ser mayor a 0";
+    if (!form.categoryId) newErrors.categoryId = "Debe seleccionar una categoria";
+    if (form.stock < 0) newErrors.stock = "El stock no puede ser negativo";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = () => {
-    let specs = {};
-    try { specs = JSON.parse(specsRaw); } catch { specs = {}; }
+    if (!validate()) return;
+
+    const specifications: Record<string, any> = {};
+    specs.forEach((s) => {
+      if (s.key.trim()) {
+        specifications[s.key.trim()] = s.type === "number" ? Number(s.value) : s.value.trim();
+      }
+    });
+
     const images = imagesRaw.split("\n").map((s) => s.trim()).filter(Boolean);
-    onSave({ ...form, specifications: specs, images });
+    onSave({ ...form, specifications, images });
   };
 
   return (
@@ -87,36 +134,135 @@ function ProductDialog({
       <DialogContent dividers>
         {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
         <Stack spacing={2.5}>
-          <TextField label="Nombre" required size="small" value={form.name} onChange={(e) => set("name", e.target.value)} fullWidth sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }} />
-          <TextField label="Marca" required size="small" value={form.brand} onChange={(e) => set("brand", e.target.value)} fullWidth sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }} />
-          <TextField label="Descripcion" size="small" multiline rows={2} value={form.description} onChange={(e) => set("description", e.target.value)} fullWidth sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }} />
+          <TextField
+            label="Nombre"
+            inputProps={{ "data-testid": "nombre_dialog_producto" }}
+            required
+            size="small"
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+            error={!!errors.name}
+            helperText={errors.name}
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+          />
+          <TextField
+            label="Marca"
+            inputProps={{ "data-testid": "marca_dialog_producto" }}
+            required
+            size="small"
+            value={form.brand}
+            onChange={(e) => set("brand", e.target.value)}
+            error={!!errors.brand}
+            helperText={errors.brand}
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+          />
+          <TextField
+            label="Descripcion"
+            inputProps={{ "data-testid": "descripcion_dialog_producto" }}
+            size="small"
+            multiline
+            rows={2}
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+          />
           <Stack direction="row" spacing={2}>
-            <TextField label="Precio" required size="small" type="number" value={form.price} onChange={(e) => set("price", Number(e.target.value))} fullWidth sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }} />
-            <TextField label="Stock inicial" size="small" type="number" value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} fullWidth sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }} />
+            <TextField
+              label="Precio"
+              inputProps={{ "data-testid": "precio_dialog_producto" }}
+              required
+              size="small"
+              type="number"
+              value={form.price}
+              onChange={(e) => set("price", Number(e.target.value))}
+              error={!!errors.price}
+              helperText={errors.price}
+              fullWidth
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+            />
+            <TextField
+              label="Stock inicial"
+              inputProps={{ "data-testid": "stock_dialog_producto" }}
+              size="small"
+              type="number"
+              value={form.stock}
+              onChange={(e) => set("stock", Number(e.target.value))}
+              error={!!errors.stock}
+              helperText={errors.stock}
+              fullWidth
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+            />
           </Stack>
-          <FormControl size="small" fullWidth>
+          <FormControl size="small" fullWidth error={!!errors.categoryId}>
             <InputLabel>Categoria</InputLabel>
             <Select
               label="Categoria"
               value={form.categoryId || ""}
               onChange={(e) => set("categoryId", Number(e.target.value))}
               sx={{ borderRadius: 1.5 }}
+              data-testid="categoria_dialog_producto"
             >
               {categories.map((c) => (
                 <MenuItem key={c.id} value={c.id}>{c.fullPath ?? c.categoryName}</MenuItem>
               ))}
             </Select>
+            {errors.categoryId && (
+              <Typography variant="caption" color="error" sx={{ ml: 1.5, mt: 0.5 }}>
+                {errors.categoryId}
+              </Typography>
+            )}
           </FormControl>
-          <TextField
-            label="Especificaciones (JSON)"
-            size="small"
-            multiline
-            rows={3}
-            value={specsRaw}
-            onChange={(e) => setSpecsRaw(e.target.value)}
-            fullWidth
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5, fontFamily: "monospace", fontSize: "0.8rem" } }}
-          />
+
+          <Box>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography variant="subtitle2" fontWeight={600}>Especificaciones</Typography>
+              <Button size="small" onClick={handleAddSpec} startIcon={<Add />} sx={{ textTransform: "none" }}>
+                Anadir
+              </Button>
+            </Stack>
+            <Stack spacing={1}>
+              {specs.map((s, idx) => (
+                <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                  <TextField
+                    placeholder="Clave"
+                    size="small"
+                    value={s.key}
+                    onChange={(e) => handleSpecChange(idx, "key", e.target.value)}
+                    sx={{ flex: 1.5, "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+                  />
+                  <TextField
+                    placeholder="Valor"
+                    size="small"
+                    type={s.type === "number" ? "number" : "text"}
+                    value={s.value}
+                    onChange={(e) => handleSpecChange(idx, "value", e.target.value)}
+                    sx={{ flex: 2, "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+                  />
+                  <Select
+                    size="small"
+                    value={s.type}
+                    onChange={(e) => handleSpecChange(idx, "type", e.target.value)}
+                    sx={{ flex: 1, borderRadius: 1.5, fontSize: "0.8rem" }}
+                  >
+                    <MenuItem value="text">Texto</MenuItem>
+                    <MenuItem value="number">Num</MenuItem>
+                  </Select>
+                  <IconButton onClick={() => handleRemoveSpec(idx)} color="error" size="small">
+                    <DeleteOutline fontSize="small" />
+                  </IconButton>
+                </Stack>
+              ))}
+              {specs.length === 0 && (
+                <Typography variant="caption" color="text.disabled" textAlign="center">
+                  No hay especificaciones. Anade una para detallar el producto.
+                </Typography>
+              )}
+            </Stack>
+          </Box>
+
           <TextField
             label="URLs de imagenes (una por linea)"
             size="small"
@@ -144,6 +290,7 @@ function ProductDialog({
   );
 }
 
+
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -160,19 +307,30 @@ export default function AdminProductsPage() {
 
   const createMut = useMutation({
     mutationFn: adminCreateProduct,
-    onSuccess: () => { setDialogOpen(false); setMutError(null); invalidate(); },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      setDialogOpen(false);
+      setMutError(null);
+    },
     onError: (e: unknown) => setMutError(e instanceof Error ? e.message : "Error"),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: CreateProductPayload }) => adminUpdateProduct(id, data),
-    onSuccess: () => { setEditing(null); setMutError(null); invalidate(); },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      setEditing(null);
+      setMutError(null);
+    },
     onError: (e: unknown) => setMutError(e instanceof Error ? e.message : "Error"),
   });
 
   const deleteMut = useMutation({
     mutationFn: adminDeleteProduct,
-    onSuccess: () => { setDeleteTarget(null); invalidate(); },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      setDeleteTarget(null);
+    },
   });
 
   const handleSave = (data: CreateProductPayload) => {
@@ -246,13 +404,14 @@ export default function AdminProductsPage() {
                   <Typography variant="body2" fontWeight={700}>
                     ${toCurrency(toNumber(p.price))}
                   </Typography>
-                  <IconButton size="small" onClick={() => openEdit(p)} sx={{ color: "text.secondary" }}>
+                  <IconButton size="small" onClick={() => openEdit(p)} sx={{ color: "text.secondary" }} data-testid={`edit-btn-${p.id}`}>
                     <EditOutlined sx={{ fontSize: 18 }} />
                   </IconButton>
                   <IconButton
                     size="small"
                     sx={{ color: "error.main" }}
                     onClick={() => setDeleteTarget(p.id)}
+                    data-testid={`delete-btn-${p.id}`}
                   >
                     <DeleteOutline sx={{ fontSize: 18 }} />
                   </IconButton>

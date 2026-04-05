@@ -115,7 +115,7 @@ export default function SearchFilterSideBar({
     .sort();
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} data-testid="filter-bar">
       {renderFacet("Categoría", "category")}
       {renderFacet("Marca", "brand")}
 

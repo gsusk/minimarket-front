@@ -58,6 +58,7 @@ export default function FilterSidebar({
       <Drawer
         anchor="left"
         open={drawerOpen}
+        data-testid="filter-bar"
         onClose={toggleDrawer(false)}
         sx={{
           "& .MuiDrawer-paper": {

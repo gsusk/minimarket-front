@@ -3,7 +3,6 @@
 import {
   Box,
   Typography,
-  Paper,
   Stack,
   Button,
   TextField,
@@ -18,9 +17,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
+  FormHelperText,
 } from "@mui/material";
-import { Add, DeleteOutline, EditOutlined } from "@mui/icons-material";
-import { useState } from "react";
+import { Add, DeleteOutline, EditOutlined, CategoryOutlined, TuneOutlined } from "@mui/icons-material";
+import { useState, useEffect, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adminCreateProduct,
@@ -29,7 +30,7 @@ import {
   getCategories,
   CreateProductPayload,
 } from "../../../api/admin";
-import { getFeaturedProducts, DetailedProduct } from "../../../api/products";
+import { getFeaturedProducts, DetailedProduct, CategoryAttributeDefinition } from "../../../api/products";
 import { toCurrency, toNumber } from "../../../utils/format";
 
 const EMPTY_FORM: CreateProductPayload = {
@@ -42,6 +43,13 @@ const EMPTY_FORM: CreateProductPayload = {
   specifications: {},
   images: [],
 };
+
+function formatAttributeLabel(name: string): string {
+  return name
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 function ProductDialog({
   open,
@@ -59,14 +67,9 @@ function ProductDialog({
   error: string | null;
 }) {
   const [form, setForm] = useState<CreateProductPayload>(initial);
-  const [specs, setSpecs] = useState<{ key: string; value: string; type: "text" | "number" }[]>(
-    Object.entries(initial.specifications || {}).map(([key, value]) => ({
-      key,
-      value: String(value),
-      type: typeof value === "number" ? "number" : "text"
-    }))
-  );
-  const [imagesRaw, setImagesRaw] = useState((initial.images ?? []).join("\n"));
+  const [categoryAttrs, setCategoryAttrs] = useState<Record<string, any>>({});
+  const [specs, setSpecs] = useState<{ key: string; value: string; type: "text" | "number" }[]>([]);
+  const [imagesRaw, setImagesRaw] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: categories = [] } = useQuery({
@@ -74,12 +77,78 @@ function ProductDialog({
     queryFn: getCategories,
   });
 
+  const selectedCategory = useMemo(() => {
+    return categories.find((c) => c.id === form.categoryId);
+  }, [categories, form.categoryId]);
+
+  const attributeDefinitions: CategoryAttributeDefinition[] = useMemo(() => {
+    return selectedCategory?.attributeDefinitions ?? [];
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (open) {
+      setForm(initial);
+      setImagesRaw((initial.images ?? []).join("\n"));
+      setErrors({});
+
+      const initialSpecs = initial.specifications || {};
+      const catDefs = categories.find((c) => c.id === initial.categoryId)?.attributeDefinitions || [];
+      const catDefNames = new Set(catDefs.map((d) => d.name.toLowerCase()));
+
+      const matchedCatAttrs: Record<string, any> = {};
+      const customSpecs: { key: string; value: string; type: "text" | "number" }[] = [];
+
+      Object.entries(initialSpecs).forEach(([key, val]) => {
+        if (catDefNames.has(key.toLowerCase())) {
+          matchedCatAttrs[key] = val;
+        } else {
+          customSpecs.push({
+            key,
+            value: String(val ?? ""),
+            type: typeof val === "number" ? "number" : "text",
+          });
+        }
+      });
+
+      if (catDefNames.has("marca") && !matchedCatAttrs.marca && initial.brand) {
+        matchedCatAttrs.marca = initial.brand;
+      }
+
+      setCategoryAttrs(matchedCatAttrs);
+      setSpecs(customSpecs);
+    }
+  }, [open, initial, categories]);
+
   const set = (k: keyof CreateProductPayload, v: unknown) => {
-    setForm((prev) => ({ ...prev, [k]: v }));
+    setForm((prev) => {
+      const next = { ...prev, [k]: v };
+      if (k === "brand" && typeof v === "string") {
+        setCategoryAttrs((prevAttrs) => {
+          if (!prevAttrs.marca || prevAttrs.marca === prev.brand) {
+            return { ...prevAttrs, marca: v };
+          }
+          return prevAttrs;
+        });
+      }
+      return next;
+    });
+
     if (errors[k]) {
       setErrors((prev) => {
         const next = { ...prev };
         delete next[k];
+        return next;
+      });
+    }
+  };
+
+  const handleCategoryAttrChange = (name: string, value: any) => {
+    setCategoryAttrs((prev) => ({ ...prev, [name]: value }));
+    const errorKey = `cat_attr_${name}`;
+    if (errors[errorKey]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[errorKey];
         return next;
       });
     }
@@ -108,6 +177,21 @@ function ProductDialog({
     if (!form.categoryId) newErrors.categoryId = "Debe seleccionar una categoria";
     if (form.stock < 0) newErrors.stock = "El stock no puede ser negativo";
 
+    attributeDefinitions.forEach((def) => {
+      if (def.required) {
+        const val = categoryAttrs[def.name];
+        const inCustom = specs.some(
+          (s) => s.key.trim().toLowerCase() === def.name.toLowerCase() && s.value.trim() !== ""
+        );
+        const hasVal = val !== undefined && val !== null && String(val).trim() !== "";
+        const isSatisfiedByBrand = def.name.toLowerCase() === "marca" && form.brand.trim().length > 0;
+
+        if (!hasVal && !inCustom && !isSatisfiedByBrand) {
+          newErrors[`cat_attr_${def.name}`] = `${formatAttributeLabel(def.name)} es requerido`;
+        }
+      }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -116,13 +200,38 @@ function ProductDialog({
     if (!validate()) return;
 
     const specifications: Record<string, any> = {};
-    specs.forEach((s) => {
-      if (s.key.trim()) {
-        specifications[s.key.trim()] = s.type === "number" ? Number(s.value) : s.value.trim();
+
+    attributeDefinitions.forEach((def) => {
+      const val = categoryAttrs[def.name];
+      if (val !== undefined && val !== null && String(val).trim() !== "") {
+        if (def.type === "number") {
+          const num = Number(val);
+          if (!isNaN(num)) specifications[def.name] = num;
+        } else if (def.type === "boolean") {
+          specifications[def.name] = val === true || val === "true";
+        } else {
+          specifications[def.name] = String(val).trim();
+        }
       }
     });
 
-    const images = imagesRaw.split("\n").map((s) => s.trim()).filter(Boolean);
+    const hasMarcaDef = attributeDefinitions.some((d) => d.name.toLowerCase() === "marca");
+    if (hasMarcaDef && (!specifications.marca || String(specifications.marca).trim() === "") && form.brand.trim()) {
+      specifications.marca = form.brand.trim();
+    }
+
+    specs.forEach((s) => {
+      if (s.key.trim() && s.value.trim() !== "") {
+        const key = s.key.trim();
+        specifications[key] = s.type === "number" ? Number(s.value) : s.value.trim();
+      }
+    });
+
+    const images = imagesRaw
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     onSave({ ...form, specifications, images });
   };
 
@@ -132,7 +241,11 @@ function ProductDialog({
         {initial.name ? "Editar producto" : "Nuevo producto"}
       </DialogTitle>
       <DialogContent dividers>
-        {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+            {error}
+          </Alert>
+        )}
         <Stack spacing={2.5}>
           <TextField
             label="Nombre"
@@ -146,6 +259,7 @@ function ProductDialog({
             fullWidth
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
           />
+
           <TextField
             label="Marca"
             inputProps={{ "data-testid": "marca_dialog_producto" }}
@@ -158,6 +272,7 @@ function ProductDialog({
             fullWidth
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
           />
+
           <TextField
             label="Descripcion"
             inputProps={{ "data-testid": "descripcion_dialog_producto" }}
@@ -169,6 +284,7 @@ function ProductDialog({
             fullWidth
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
           />
+
           <Stack direction="row" spacing={2}>
             <TextField
               label="Precio"
@@ -176,8 +292,8 @@ function ProductDialog({
               required
               size="small"
               type="number"
-              value={form.price}
-              onChange={(e) => set("price", Number(e.target.value))}
+              value={form.price === 0 ? "" : form.price}
+              onChange={(e) => set("price", e.target.value === "" ? 0 : Number(e.target.value))}
               error={!!errors.price}
               helperText={errors.price}
               fullWidth
@@ -189,13 +305,14 @@ function ProductDialog({
               size="small"
               type="number"
               value={form.stock}
-              onChange={(e) => set("stock", Number(e.target.value))}
+              onChange={(e) => set("stock", e.target.value === "" ? 0 : Number(e.target.value))}
               error={!!errors.stock}
               helperText={errors.stock}
               fullWidth
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
             />
           </Stack>
+
           <FormControl size="small" fullWidth error={!!errors.categoryId}>
             <InputLabel>Categoria</InputLabel>
             <Select
@@ -206,19 +323,139 @@ function ProductDialog({
               data-testid="categoria_dialog_producto"
             >
               {categories.map((c) => (
-                <MenuItem key={c.id} value={c.id}>{c.fullPath ?? c.categoryName}</MenuItem>
+                <MenuItem key={c.id} value={c.id}>
+                  {c.fullPath ?? c.categoryName}
+                </MenuItem>
               ))}
             </Select>
             {errors.categoryId && (
-              <Typography variant="caption" color="error" sx={{ ml: 1.5, mt: 0.5 }}>
-                {errors.categoryId}
-              </Typography>
+              <FormHelperText>{errors.categoryId}</FormHelperText>
             )}
           </FormControl>
 
+          {attributeDefinitions.length > 0 && (
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                bgcolor: "grey.50",
+                border: "1px solid rgba(0,0,0,0.08)",
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                <CategoryOutlined fontSize="small" color="primary" />
+                <Typography variant="subtitle2" fontWeight={700}>
+                  Atributos de {selectedCategory?.categoryName}
+                </Typography>
+                <Chip size="small" label={`${attributeDefinitions.length} atributos`} sx={{ height: 20, fontSize: "0.7rem" }} />
+              </Stack>
+
+              <Stack spacing={1.5}>
+                {attributeDefinitions.map((def) => {
+                  const errorKey = `cat_attr_${def.name}`;
+                  const hasError = !!errors[errorKey];
+                  const value = categoryAttrs[def.name] ?? "";
+
+                  if (def.type === "enum" || (def.options && def.options.length > 0)) {
+                    return (
+                      <FormControl key={def.name} size="small" fullWidth error={hasError}>
+                        <InputLabel>{formatAttributeLabel(def.name)}{def.required ? " *" : ""}</InputLabel>
+                        <Select
+                          label={`${formatAttributeLabel(def.name)}${def.required ? " *" : ""}`}
+                          value={value}
+                          onChange={(e) => handleCategoryAttrChange(def.name, e.target.value)}
+                          sx={{ borderRadius: 1.5, bgcolor: "white" }}
+                        >
+                          <MenuItem value="">
+                            <em>Ninguno</em>
+                          </MenuItem>
+                          {(def.options || []).map((opt) => (
+                            <MenuItem key={String(opt)} value={opt}>
+                              {String(opt)}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {hasError && <FormHelperText>{errors[errorKey]}</FormHelperText>}
+                      </FormControl>
+                    );
+                  }
+
+                  if (def.type === "boolean") {
+                    return (
+                      <FormControl key={def.name} size="small" fullWidth error={hasError}>
+                        <InputLabel>{formatAttributeLabel(def.name)}{def.required ? " *" : ""}</InputLabel>
+                        <Select
+                          label={`${formatAttributeLabel(def.name)}${def.required ? " *" : ""}`}
+                          value={value === "" ? "" : String(value)}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? "" : e.target.value === "true";
+                            handleCategoryAttrChange(def.name, val);
+                          }}
+                          sx={{ borderRadius: 1.5, bgcolor: "white" }}
+                        >
+                          <MenuItem value="">
+                            <em>No especificado</em>
+                          </MenuItem>
+                          <MenuItem value="true">Sí</MenuItem>
+                          <MenuItem value="false">No</MenuItem>
+                        </Select>
+                        {hasError && <FormHelperText>{errors[errorKey]}</FormHelperText>}
+                      </FormControl>
+                    );
+                  }
+
+                  if (def.type === "number") {
+                    const helper = hasError
+                      ? errors[errorKey]
+                      : [
+                          def.min !== undefined && def.min !== null ? `Mín: ${def.min}` : null,
+                          def.max !== undefined && def.max !== null ? `Máx: ${def.max}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" • ");
+
+                    return (
+                      <TextField
+                        key={def.name}
+                        label={`${formatAttributeLabel(def.name)}${def.required ? " *" : ""}`}
+                        size="small"
+                        type="number"
+                        value={value}
+                        onChange={(e) => handleCategoryAttrChange(def.name, e.target.value)}
+                        error={hasError}
+                        helperText={helper}
+                        fullWidth
+                        sx={{ bgcolor: "white", "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+                      />
+                    );
+                  }
+
+                  return (
+                    <TextField
+                      key={def.name}
+                      label={`${formatAttributeLabel(def.name)}${def.required ? " *" : ""}`}
+                      size="small"
+                      value={value}
+                      onChange={(e) => handleCategoryAttrChange(def.name, e.target.value)}
+                      error={hasError}
+                      helperText={hasError ? errors[errorKey] : undefined}
+                      fullWidth
+                      sx={{ bgcolor: "white", "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+                    />
+                  );
+                })}
+              </Stack>
+            </Box>
+          )}
+
           <Box>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-              <Typography variant="subtitle2" fontWeight={600}>Especificaciones</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <TuneOutlined fontSize="small" color="action" />
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Especificaciones adicionales
+                </Typography>
+              </Stack>
               <Button size="small" onClick={handleAddSpec} startIcon={<Add />} sx={{ textTransform: "none" }}>
                 Anadir
               </Button>
@@ -257,7 +494,9 @@ function ProductDialog({
               ))}
               {specs.length === 0 && (
                 <Typography variant="caption" color="text.disabled" textAlign="center">
-                  No hay especificaciones. Anade una para detallar el producto.
+                  {attributeDefinitions.length > 0
+                    ? "Puedes añadir campos personalizados adicionales si lo deseas."
+                    : "No hay especificaciones. Añade una para detallar el producto."}
                 </Typography>
               )}
             </Stack>
@@ -276,7 +515,9 @@ function ProductDialog({
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} sx={{ color: "text.secondary" }}>Cancelar</Button>
+        <Button onClick={onClose} sx={{ color: "text.secondary" }}>
+          Cancelar
+        </Button>
         <Button
           variant="contained"
           onClick={handleSave}
@@ -289,7 +530,6 @@ function ProductDialog({
     </Dialog>
   );
 }
-
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
@@ -312,7 +552,7 @@ export default function AdminProductsPage() {
       setDialogOpen(false);
       setMutError(null);
     },
-    onError: (e: unknown) => setMutError(e instanceof Error ? e.message : "Error"),
+    onError: (e: unknown) => setMutError(e instanceof Error ? e.message : "Error al crear producto"),
   });
 
   const updateMut = useMutation({
@@ -322,7 +562,7 @@ export default function AdminProductsPage() {
       setEditing(null);
       setMutError(null);
     },
-    onError: (e: unknown) => setMutError(e instanceof Error ? e.message : "Error"),
+    onError: (e: unknown) => setMutError(e instanceof Error ? e.message : "Error al actualizar producto"),
   });
 
   const deleteMut = useMutation({
@@ -359,13 +599,20 @@ export default function AdminProductsPage() {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
-          <Typography variant="h4" fontWeight={900} letterSpacing={-1.5}>Productos</Typography>
-          <Typography variant="body2" color="text.disabled" mt={0.5}>Gestiona el catalogo de productos</Typography>
+          <Typography variant="h4" fontWeight={900} letterSpacing={-1.5}>
+            Productos
+          </Typography>
+          <Typography variant="body2" color="text.disabled" mt={0.5}>
+            Gestiona el catalogo de productos
+          </Typography>
         </Box>
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => { setDialogOpen(true); setMutError(null); }}
+          onClick={() => {
+            setDialogOpen(true);
+            setMutError(null);
+          }}
           sx={{ borderRadius: 1.5, bgcolor: "text.primary", color: "white", "&:hover": { bgcolor: "grey.800" } }}
         >
           Nuevo producto
@@ -374,18 +621,28 @@ export default function AdminProductsPage() {
 
       <Box sx={{ borderRadius: 3, border: "1px solid rgba(0,0,0,0.07)", bgcolor: "white", overflow: "hidden" }}>
         <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0,0,0,0.06)", bgcolor: "transparent" }}>
-          <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
+          <Typography
+            variant="caption"
+            fontWeight={700}
+            color="text.disabled"
+            letterSpacing={0.8}
+            sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}
+          >
             {products.length} productos
           </Typography>
         </Box>
 
         {isLoading ? (
           <Box sx={{ px: 3, py: 5, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">Cargando productos...</Typography>
+            <Typography variant="body2" color="text.disabled">
+              Cargando productos...
+            </Typography>
           </Box>
         ) : products.length === 0 ? (
           <Box sx={{ px: 3, py: 5, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">No hay productos registrados.</Typography>
+            <Typography variant="body2" color="text.disabled">
+              No hay productos registrados.
+            </Typography>
           </Box>
         ) : (
           products.map((p, idx) => (
@@ -397,14 +654,23 @@ export default function AdminProductsPage() {
                 sx={{ px: 3, py: 2 }}
               >
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600} noWrap>{p.name}</Typography>
-                  <Typography variant="caption" color="text.disabled">{p.brand} — Stock: {p.stock}</Typography>
+                  <Typography variant="body2" fontWeight={600} noWrap>
+                    {p.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled">
+                    {p.brand} — Stock: {p.stock}
+                  </Typography>
                 </Box>
                 <Stack direction="row" alignItems="center" gap={2}>
                   <Typography variant="body2" fontWeight={700}>
                     ${toCurrency(toNumber(p.price))}
                   </Typography>
-                  <IconButton size="small" onClick={() => openEdit(p)} sx={{ color: "text.secondary" }} data-testid={`edit-btn-${p.id}`}>
+                  <IconButton
+                    size="small"
+                    onClick={() => openEdit(p)}
+                    sx={{ color: "text.secondary" }}
+                    data-testid={`edit-btn-${p.id}`}
+                  >
                     <EditOutlined sx={{ fontSize: 18 }} />
                   </IconButton>
                   <IconButton
@@ -443,20 +709,28 @@ export default function AdminProductsPage() {
         />
       )}
 
-      <Dialog open={deleteTarget !== null} onClose={() => setDeleteTarget(null)} PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
         <DialogTitle sx={{ fontWeight: 700 }}>Eliminar producto</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            Esta accion es irreversible. El producto sera eliminado del catalogo.
+            Esta seguro de que desea eliminar este producto? Esta accion no se puede deshacer.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setDeleteTarget(null)} sx={{ color: "text.secondary" }}>Cancelar</Button>
+          <Button onClick={() => setDeleteTarget(null)} sx={{ color: "text.secondary" }}>
+            Cancelar
+          </Button>
           <Button
             variant="contained"
             color="error"
-            onClick={() => deleteTarget !== null && deleteMut.mutate(deleteTarget)}
             disabled={deleteMut.isPending}
+            onClick={() => deleteTarget && deleteMut.mutate(deleteTarget)}
             sx={{ borderRadius: 1.5 }}
           >
             {deleteMut.isPending ? "Eliminando..." : "Eliminar"}

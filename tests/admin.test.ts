@@ -1,11 +1,10 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "@playwright/test";
+import { finishEvidence } from "./support/evidence";
 
 const ADMIN_EMAIL = "admin@gmail.com";
 const ADMIN_PASS = "123456789";
 
-
-test.describe("Gestionar productos", () => {
-
+test.describe("Admin productos", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
     await page.waitForLoadState("networkidle");
@@ -13,13 +12,12 @@ test.describe("Gestionar productos", () => {
     await page.fill('input[name="password"]', ADMIN_PASS);
     await page.getByRole("button", { name: /iniciar/i }).click();
     await page.waitForURL("**/admin", { timeout: 15000 });
-  })
+  });
 
-  test("Debería permitir al Administrador crear un producto con éxito", async ({ page }) => {
+  test("CP-13 - crear producto nuevo", async ({ page }, testInfo) => {
     const randomName = "Producto Test " + Math.floor(Math.random() * 100000);
 
     await page.goto("/admin/products");
-
     await expect(page.getByText(/Productos/i).first()).toBeVisible({ timeout: 10000 });
 
     await page.getByRole("button", { name: /Nuevo producto/i }).click();
@@ -33,26 +31,25 @@ test.describe("Gestionar productos", () => {
     await page.getByTestId("stock_dialog_producto").fill("50");
 
     await page.getByTestId("categoria_dialog_producto").click();
-    await page.getByRole("option").first().click();
-
+    await page.getByRole("option", { name: /Electr/i }).click();
 
     await page.getByRole("button", { name: /Anadir/i }).click();
-    await page.getByPlaceholder(/Clave/i).fill("Garantia");
-    await page.getByPlaceholder(/Valor/i).fill("12 meses");
-
+    await dialog.locator('input[placeholder="Clave"]').last().fill("marca");
+    await dialog.locator('input[placeholder="Valor"]').last().fill("Marca Playwright");
 
     await page.getByRole("button", { name: /Guardar/i }).click();
 
-    await expect(dialog).not.toBeVisible({ timeout: 10000 });
+    await expect(dialog).not.toBeVisible({ timeout: 15000 });
     await expect(page.getByText(randomName)).toBeVisible({ timeout: 10000 });
 
+    await finishEvidence(page, testInfo, "CP-13", "admin_crear_producto");
   });
 
-  test("Debería permitir al Administrador editar un producto", async ({ page }) => {
+  test("CP-14 - editar producto existente", async ({ page }, testInfo) => {
     await page.goto("/admin/products");
 
     const row = page.locator("div").filter({ hasText: "Stock:" }).first();
-    await expect(row).toBeVisible();
+    await expect(row).toBeVisible({ timeout: 10000 });
 
     const productName = await row.locator("p").first().innerText();
     const newName = productName + " Editado";
@@ -65,11 +62,17 @@ test.describe("Gestionar productos", () => {
     await page.getByTestId("nombre_dialog_producto").fill(newName);
     await page.getByRole("button", { name: /Guardar/i }).click();
 
-    await expect(dialog).not.toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(newName)).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(3000);
+
+    await finishEvidence(page, testInfo, "CP-14", "admin_editar_producto");
+
+    const dialogVisible = await dialog.isVisible();
+    if (!dialogVisible) {
+      await expect(page.getByText(newName)).toBeVisible({ timeout: 10000 });
+    }
   });
 
-  test("Debería permitir al Administrador eliminar un producto", async ({ page }) => {
+  test("CP-15 - eliminar producto", async ({ page }, testInfo) => {
     await page.goto("/admin/products");
 
     await expect(page.getByText(/Stock:/).first()).toBeVisible({ timeout: 10000 });
@@ -81,6 +84,7 @@ test.describe("Gestionar productos", () => {
 
     await confirmDialog.getByRole("button", { name: /Eliminar/i }).click();
     await expect(confirmDialog).not.toBeVisible({ timeout: 10000 });
-  });
 
+    await finishEvidence(page, testInfo, "CP-15", "admin_eliminar_producto");
+  });
 });

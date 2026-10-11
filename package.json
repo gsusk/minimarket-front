@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:unit": "playwright test -c playwright.unit.config.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -19,6 +20,7 @@
     "axios": "^1.13.2",
     "formik": "^2.4.9",
     "next": "16.1.2",
+    "playwright": "^1.61.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "swiper": "^12.0.3",

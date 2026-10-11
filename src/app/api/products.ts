@@ -11,12 +11,28 @@ export type Product = {
   images: string[]
 }
 
+export type CategoryAttributeDefinition = {
+  name: string;
+  type: "string" | "number" | "boolean" | "enum";
+  required?: boolean;
+  facetable?: boolean;
+  filterType?: string;
+  facetStrategy?: string;
+  cardinalityHint?: string;
+  options?: (string | number)[];
+  min?: number;
+  max?: number;
+  searchable?: boolean;
+  sortable?: boolean;
+};
+
 export type CategorySummary = {
-  id: number,
-  categoryName: string,
-  fullPath: string,
-  parentName: string | null,
-}
+  id: number;
+  categoryName: string;
+  fullPath: string;
+  parentName: string | null;
+  attributeDefinitions?: CategoryAttributeDefinition[];
+};
 
 export type DetailedProduct = {
   id: number,

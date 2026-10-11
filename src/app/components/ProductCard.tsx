@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, Typography, Box, IconButton, Stack } from "@mui/material";
 import { AddShoppingCartOutlined, CheckCircleOutline, FavoriteBorder } from "@mui/icons-material";
 import Image from "next/image";
@@ -10,6 +11,10 @@ import { useCart } from "./CartProvider";
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, items } = useCart();
   const quantityInCart = items.find((item) => item.productId === product.id)?.quantity ?? 0;
+  const fallbackSrc = '/window.svg';
+  const primarySrc = (product?.images && product.images.length > 0 && product.images[0]) ? product.images[0] : fallbackSrc;
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const imgSrc = failedSrc === primarySrc ? fallbackSrc : primarySrc;
 
   return (
     <Card
@@ -38,9 +43,11 @@ export default function ProductCard({ product }: { product: Product }) {
         <Link
           href={`/product/${product.id}/${product.slug}`}>
           <Image
-            src={(product?.images && product.images.length > 0) ? product.images[0] : '/window.svg'}
+            src={imgSrc}
             alt={product?.name || "card picture"}
             fill
+            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => setFailedSrc(primarySrc)}
             style={{
               objectFit: 'contain',
               padding: '15px',

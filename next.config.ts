@@ -11,15 +11,21 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'm.media-amazon.com',
-      }, {
+      },
+      {
         protocol: 'https',
         hostname: 'imagen.com',
-      }, {
-        protocol: "https",
-        hostname: 'example.com'
-      }
-    ]
-  }
+      },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.sportline.com.co',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

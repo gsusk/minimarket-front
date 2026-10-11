@@ -13,7 +13,9 @@ import { adminGetAllOrders } from "../../api/admin";
 import { toCurrency, toNumber, formatDate } from "../../utils/format";
 import { OrderSummary } from "../../api/orders";
 
-const ACCENT = "#6366f1";
+const MARKET_GREEN = "#0f9f75";
+const MARKET_INK = "#14211c";
+const MARKET_GOLD = "#f4b942";
 
 const STATUS_COLOR: Record<string, "default" | "warning" | "success" | "error" | "info"> = {
   completed: "success",
@@ -76,9 +78,9 @@ function OrderRow({ order }: { order: OrderSummary }) {
 }
 
 function StatTile({
-  label, value, sub, color, loading,
+  label, value, sub, color, loading, icon,
 }: {
-  label: string; value: number; sub: string; color: string; loading: boolean;
+  label: string; value: number; sub: string; color: string; loading: boolean; icon: React.ReactNode;
 }) {
   return (
     <Box
@@ -86,12 +88,13 @@ function StatTile({
         flex: 1,
         minWidth: 0,
         border: "1px solid",
-        borderColor: "rgba(0,0,0,0.07)",
-        borderRadius: 2.5,
+        borderColor: "rgba(20,33,28,0.09)",
+        borderRadius: 2,
         p: { xs: 2, md: 2.5 },
-        bgcolor: "white",
+        bgcolor: "rgba(255,255,255,0.86)",
         position: "relative",
         overflow: "hidden",
+        boxShadow: "0 16px 40px rgba(20,33,28,0.06)",
       }}
     >
       <Box
@@ -101,12 +104,15 @@ function StatTile({
           width: 60, height: 60,
           borderRadius: "0 0 0 100%",
           bgcolor: color,
-          opacity: 0.08,
+          opacity: 0.1,
         }}
       />
-      <Typography variant="caption" fontWeight={600} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
-        {label}
-      </Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
+        <Typography variant="caption" fontWeight={700} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
+          {label}
+        </Typography>
+        <Box sx={{ color, display: "flex", "& svg": { fontSize: 18 } }}>{icon}</Box>
+      </Stack>
       <Typography variant="h4" fontWeight={900} letterSpacing={-1.5} mt={0.5} lineHeight={1}>
         <Val loading={loading}>{value}</Val>
       </Typography>
@@ -136,13 +142,16 @@ export default function AdminDashboard() {
   const greeting = hour < 12 ? "Buenos dias" : hour < 19 ? "Buenas tardes" : "Buenas noches";
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto" }}>
+    <Box sx={{ maxWidth: 1120, mx: "auto" }}>
 
-      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "flex-end" }} mb={5} gap={1}>
+      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "flex-end" }} mb={3.5} gap={1}>
         <Box>
-          <Typography variant="body2" color="text.disabled" fontWeight={500}>{greeting}</Typography>
-          <Typography variant="h4" fontWeight={900} letterSpacing={-1.5} lineHeight={1.1} mt={0.5}>
-            Panel de control
+          <Typography variant="body2" color="text.secondary" fontWeight={700}>{greeting}</Typography>
+          <Typography variant="h4" fontWeight={950} letterSpacing={-1.5} lineHeight={1.1} mt={0.5} color={MARKET_INK}>
+            Control de operación
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mt={1}>
+            Ventas, estado de pedidos y actividad reciente del minimarket.
           </Typography>
         </Box>
         <Typography variant="caption" color="text.disabled" sx={{ fontVariantNumeric: "tabular-nums" }}>
@@ -156,34 +165,34 @@ export default function AdminDashboard() {
             position: "relative",
             flexShrink: 0,
             width: { xs: "100%", lg: "55%" },
-            borderRadius: 3,
+            borderRadius: 2.5,
             overflow: "hidden",
-            bgcolor: "#0e0e0e",
+            bgcolor: MARKET_INK,
             p: { xs: 3, md: 4.5 },
             color: "white",
             minHeight: 220,
+            boxShadow: "0 28px 70px rgba(20,33,28,0.22)",
           }}
         >
           <Box sx={{
             position: "absolute", inset: 0, pointerEvents: "none",
-            backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
+            backgroundImage: "linear-gradient(135deg, rgba(244,185,66,0.22), transparent 38%), radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)",
+            backgroundSize: "auto, 22px 22px",
           }} />
-          {/*brillo*/}
           <Box sx={{
             position: "absolute",
             bottom: -60, right: -40,
             width: 200, height: 200,
             borderRadius: "50%",
-            bgcolor: ACCENT,
+            bgcolor: MARKET_GREEN,
             filter: "blur(80px)",
-            opacity: 0.25,
+            opacity: 0.35,
             pointerEvents: "none",
           }} />
 
           <Box sx={{ position: "relative", zIndex: 1 }}>
             <Stack direction="row" alignItems="center" gap={1} mb={4}>
-              <TrendingUpOutlined sx={{ fontSize: 15, color: ACCENT }} />
+              <TrendingUpOutlined sx={{ fontSize: 15, color: MARKET_GOLD }} />
               <Typography variant="caption" fontWeight={700} letterSpacing={1.5} sx={{ color: "rgba(255,255,255,0.45)", textTransform: "uppercase", fontSize: "0.62rem" }}>
                 Ingresos confirmados
               </Typography>
@@ -202,7 +211,7 @@ export default function AdminDashboard() {
             </Typography>
 
             <Stack direction="row" alignItems="center" gap={1} mt={2}>
-              <NorthEastOutlined sx={{ fontSize: 13, color: "#22c55e" }} />
+              <NorthEastOutlined sx={{ fontSize: 13, color: MARKET_GOLD }} />
               <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)", fontSize: "0.8rem" }}>
                 <Val loading={isLoading}>
                   {conversionRate}% tasa de conversion · {total} {total === 1 ? "orden" : "ordenes"} en total
@@ -214,28 +223,29 @@ export default function AdminDashboard() {
 
         <Stack flex={1} gap={2.5}>
           <Stack direction="row" gap={2.5} flex={1}>
-            <StatTile label="Completadas" value={completed} sub="procesadas y pagadas" color="#22c55e" loading={isLoading} />
-            <StatTile label="Pendientes" value={pending} sub="esperando confirmacion" color="#f59e0b" loading={isLoading} />
+            <StatTile label="Completadas" value={completed} sub="procesadas y pagadas" color={MARKET_GREEN} loading={isLoading} icon={<CheckCircleOutline />} />
+            <StatTile label="Pendientes" value={pending} sub="esperando confirmación" color="#d99716" loading={isLoading} icon={<PendingOutlined />} />
           </Stack>
           <Stack direction="row" gap={2.5} flex={1}>
-            <StatTile label="Canceladas" value={cancelled} sub="sin procesar" color="#ef4444" loading={isLoading} />
+            <StatTile label="Canceladas" value={cancelled} sub="sin procesar" color="#dc3f3f" loading={isLoading} icon={<CancelOutlined />} />
             <Box
               sx={{
                 flex: 1,
                 minWidth: 0,
                 border: "1px solid",
-                borderColor: "rgba(0,0,0,0.07)",
-                borderRadius: 2.5,
+                borderColor: "rgba(20,33,28,0.09)",
+                borderRadius: 2,
                 p: 2.5,
-                bgcolor: ACCENT,
-                color: "white",
+                bgcolor: MARKET_GOLD,
+                color: MARKET_INK,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
+                boxShadow: "0 16px 40px rgba(20,33,28,0.08)",
               }}
             >
-              <Typography variant="caption" fontWeight={700} letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem", opacity: 0.7 }}>
-                Conversion
+              <Typography variant="caption" fontWeight={800} letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem", opacity: 0.74 }}>
+                Conversión
               </Typography>
               <Typography variant="h4" fontWeight={900} letterSpacing={-1.5} lineHeight={1}>
                 <Val loading={isLoading}>{conversionRate}%</Val>
@@ -247,11 +257,12 @@ export default function AdminDashboard() {
       </Stack>
       <Box
         sx={{
-          bgcolor: "white",
+          bgcolor: "rgba(255,255,255,0.88)",
           border: "1px solid",
-          borderColor: "rgba(0,0,0,0.07)",
-          borderRadius: 3,
+          borderColor: "rgba(20,33,28,0.09)",
+          borderRadius: 2.5,
           overflow: "hidden",
+          boxShadow: "0 22px 54px rgba(20,33,28,0.07)",
         }}
       >
         <Stack

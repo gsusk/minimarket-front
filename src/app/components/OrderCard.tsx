@@ -5,15 +5,15 @@ import { formatDate, toCurrency, toNumber } from "../utils/format";
 
 type StatusConfig = {
   label: string;
-  color: "default" | "warning" | "success" | "error" | "info";
+  color: string;
   Icon: React.ElementType;
 };
 
 const STATUS_CONFIG: Record<string, StatusConfig> = {
-  pending: { label: "Pendiente", color: "warning", Icon: Schedule },
-  completed: { label: "Completada", color: "success", Icon: CheckCircle },
-  cancelled: { label: "Cancelada", color: "error", Icon: Cancel },
-  processing: { label: "En proceso", color: "info", Icon: HourglassTop },
+  pending: { label: "Pendiente", color: "#8a6d1d", Icon: Schedule },
+  completed: { label: "Completada", color: "#2f6f4e", Icon: CheckCircle },
+  cancelled: { label: "Cancelada", color: "#8a3a3a", Icon: Cancel },
+  processing: { label: "En proceso", color: "#4a5568", Icon: HourglassTop },
 };
 
 
@@ -23,7 +23,7 @@ export function OrderCard({ order, onClick }: { order: OrderSummary; onClick: ()
   const isCancelled = order.status.toLowerCase() === "cancelled";
 
   function getStatusConfig(status: string): StatusConfig {
-    return STATUS_CONFIG[status.toLowerCase()] ?? { label: status, color: "default", Icon: Schedule };
+    return STATUS_CONFIG[status.toLowerCase()] ?? { label: status, color: "#4a5568", Icon: Schedule };
   }
 
   return (
@@ -32,16 +32,15 @@ export function OrderCard({ order, onClick }: { order: OrderSummary; onClick: ()
       onClick={onClick}
       sx={{
         p: { xs: 2.5, md: 3 },
-        borderRadius: 3,
+        borderRadius: 2,
         border: "1px solid",
         borderColor: "grey.200",
         cursor: "pointer",
         opacity: isCancelled ? 0.65 : 1,
-        transition: "all 0.18s ease",
+        transition: "border-color 0.18s ease, background-color 0.18s ease",
         "&:hover": {
-          borderColor: isCancelled ? "grey.300" : "primary.main",
-          boxShadow: isCancelled ? "none" : "0 4px 18px rgba(25,118,210,0.1)",
-          transform: isCancelled ? "none" : "translateY(-2px)",
+          borderColor: isCancelled ? "grey.300" : "grey.400",
+          bgcolor: "grey.50",
         },
       }}
     >
@@ -60,8 +59,16 @@ export function OrderCard({ order, onClick }: { order: OrderSummary; onClick: ()
               icon={<Icon style={{ fontSize: 13 }} />}
               label={label}
               size="small"
-              color={color}
-              sx={{ fontWeight: 700, fontSize: "0.7rem", height: 22 }}
+              variant="outlined"
+              sx={{
+                fontWeight: 700,
+                fontSize: "0.7rem",
+                height: 22,
+                borderRadius: 1,
+                color,
+                borderColor: "grey.300",
+                "& .MuiChip-icon": { color }
+              }}
             />
           </Stack>
           <Typography variant="body2" color="text.secondary">
@@ -84,7 +91,7 @@ export function OrderCard({ order, onClick }: { order: OrderSummary; onClick: ()
             <Typography
               variant="h6"
               fontWeight={800}
-              color={isCancelled ? "text.disabled" : "primary.main"}
+              color={isCancelled ? "text.disabled" : "text.primary"}
             >
               ${toCurrency(toNumber(order.totalAmount))}
             </Typography>

@@ -10,7 +10,6 @@ import {
   Button,
 } from "@mui/material";
 import {
-  ShoppingBag,
   ReceiptLong
 } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
@@ -28,23 +27,15 @@ export default function OrdersPage() {
   return (
     <Box>
       <Typography
-        variant="h6"
+        variant="h5"
         fontWeight={700}
         gutterBottom
-        sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}
+        sx={{ mb: 0.5 }}
       >
-        <Box
-          sx={{
-            p: 0.9,
-            borderRadius: 1.5,
-            bgcolor: "primary.main",
-            color: "white",
-            display: "flex",
-          }}
-        >
-          <ShoppingBag fontSize="small" />
-        </Box>
         Mis Órdenes
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Historial de compras realizadas con tu cuenta.
       </Typography>
 
       {isLoading && (
@@ -63,22 +54,26 @@ export default function OrdersPage() {
         <Paper
           elevation={0}
           sx={{
-            p: 6,
+            p: { xs: 4, md: 6 },
             textAlign: "center",
-            borderRadius: 4,
+            borderRadius: 2,
             border: "1px dashed",
             borderColor: "grey.300",
-            bgcolor: "grey.50",
+            bgcolor: "background.paper",
           }}
         >
-          <ReceiptLong sx={{ fontSize: 52, color: "text.disabled", mb: 2 }} />
+          <ReceiptLong sx={{ fontSize: 44, color: "text.disabled", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" fontWeight={600} gutterBottom>
-            Sin ordenes aun
+            Sin órdenes aún
           </Typography>
           <Typography variant="body2" color="text.disabled" mb={3}>
-            Tus compras apareceran aquí una vez que realices un pedido.
+            Tus compras aparecerán aquí una vez que realices un pedido.
           </Typography>
-          <Button variant="contained" onClick={() => router.push("/")} sx={{ borderRadius: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => router.push("/")}
+            sx={{ borderRadius: 1.5, color: "text.primary", borderColor: "divider", textTransform: "none", fontWeight: 700 }}
+          >
             Explorar productos
           </Button>
         </Paper>

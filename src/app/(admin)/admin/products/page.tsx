@@ -119,6 +119,47 @@ function ProductDialog({
     }
   }, [open, initial, categories]);
 
+  useEffect(() => {
+    if (error) {
+      const serverFieldErrors: Record<string, string> = {};
+      const lower = error.toLowerCase();
+
+      if (
+        lower.includes("slug") ||
+        lower.includes("ya existe un producto") ||
+        lower.includes("already exists") ||
+        lower.includes("duplicate")
+      ) {
+        serverFieldErrors.name = "Ya existe un producto con este nombre o slug";
+      }
+
+      const specMatch = error.match(/specifications\[([^\]]+)\](?::|\s+)?([^,;]*)/g);
+      if (specMatch) {
+        specMatch.forEach((item) => {
+          const m = item.match(/specifications\[([^\]]+)\](?::|\s+)?(.*)/);
+          if (m) {
+            const attr = m[1].trim();
+            const msg = m[2].trim() || "Valor no permitido o inválido";
+            serverFieldErrors[`cat_attr_${attr}`] = msg;
+          }
+        });
+      }
+
+      ["name", "brand", "description", "price", "stock", "categoryId"].forEach((field) => {
+        if (lower.includes(`${field}:`)) {
+          const match = error.match(new RegExp(`${field}:\\s*([^,;]+)`, "i"));
+          if (match) {
+            serverFieldErrors[field] = match[1].trim();
+          }
+        }
+      });
+
+      if (Object.keys(serverFieldErrors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...serverFieldErrors }));
+      }
+    }
+  }, [error]);
+
   const set = (k: keyof CreateProductPayload, v: unknown) => {
     setForm((prev) => {
       const next = { ...prev, [k]: v };
@@ -173,24 +214,49 @@ function ProductDialog({
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = "El nombre es requerido";
     if (!form.brand.trim()) newErrors.brand = "La marca es requerida";
-    if (form.price <= 0) newErrors.price = "El precio debe ser mayor a 0";
+    if (!form.description.trim()) newErrors.description = "La descripcion es requerida";
+    if (form.price === undefined || form.price === null || form.price <= 0) newErrors.price = "El precio debe ser mayor a 0";
     if (!form.categoryId) newErrors.categoryId = "Debe seleccionar una categoria";
     if (form.stock < 0) newErrors.stock = "El stock no puede ser negativo";
 
+    const allowedAttrNames = new Set(attributeDefinitions.map((d) => d.name.toLowerCase()));
+
     attributeDefinitions.forEach((def) => {
+      const val = categoryAttrs[def.name];
+      const hasVal = val !== undefined && val !== null && String(val).trim() !== "";
+      const isSatisfiedByBrand = def.name.toLowerCase() === "marca" && form.brand.trim().length > 0;
+
       if (def.required) {
-        const val = categoryAttrs[def.name];
         const inCustom = specs.some(
           (s) => s.key.trim().toLowerCase() === def.name.toLowerCase() && s.value.trim() !== ""
         );
-        const hasVal = val !== undefined && val !== null && String(val).trim() !== "";
-        const isSatisfiedByBrand = def.name.toLowerCase() === "marca" && form.brand.trim().length > 0;
-
         if (!hasVal && !inCustom && !isSatisfiedByBrand) {
           newErrors[`cat_attr_${def.name}`] = `${formatAttributeLabel(def.name)} es requerido`;
         }
       }
+
+      if (hasVal) {
+        if (def.type === "number") {
+          const num = Number(val);
+          if (isNaN(num)) {
+            newErrors[`cat_attr_${def.name}`] = `${formatAttributeLabel(def.name)} debe ser un número válido`;
+          } else if (def.min !== undefined && def.min !== null && num < def.min) {
+            newErrors[`cat_attr_${def.name}`] = `El valor mínimo permitido es ${def.min}`;
+          } else if (def.max !== undefined && def.max !== null && num > def.max) {
+            newErrors[`cat_attr_${def.name}`] = `El valor máximo permitido es ${def.max}`;
+          }
+        }
+      }
     });
+
+    if (attributeDefinitions.length > 0) {
+      specs.forEach((s, idx) => {
+        const k = s.key.trim().toLowerCase();
+        if (k && !allowedAttrNames.has(k)) {
+          newErrors[`spec_${idx}`] = `Atributo "${s.key}" no permitido en esta categoría. Permitidos: ${attributeDefinitions.map((d) => d.name).join(", ")}`;
+        }
+      });
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -281,6 +347,8 @@ function ProductDialog({
             rows={2}
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
+            error={!!errors.description}
+            helperText={errors.description}
             fullWidth
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
           />
@@ -345,9 +413,9 @@ function ProductDialog({
               <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
                 <CategoryOutlined fontSize="small" color="primary" />
                 <Typography variant="subtitle2" fontWeight={700}>
-                  Atributos de {selectedCategory?.categoryName}
+                  Atributos permitidos para {selectedCategory?.categoryName}
                 </Typography>
-                <Chip size="small" label={`${attributeDefinitions.length} atributos`} sx={{ height: 20, fontSize: "0.7rem" }} />
+                <Chip size="small" label={`${attributeDefinitions.length} atributos`} sx={{ height: 20, fontSize: "0.7rem", bgcolor: "primary.50", color: "primary.main", fontWeight: 600 }} />
               </Stack>
 
               <Stack spacing={1.5}>
@@ -460,42 +528,73 @@ function ProductDialog({
                 Anadir
               </Button>
             </Stack>
+            {attributeDefinitions.length > 0 && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                Atributos permitidos en esta categoría: {attributeDefinitions.map((d) => d.name).join(", ")}
+              </Typography>
+            )}
             <Stack spacing={1}>
               {specs.map((s, idx) => (
-                <Stack key={idx} direction="row" spacing={1} alignItems="center">
-                  <TextField
-                    placeholder="Clave"
-                    size="small"
-                    value={s.key}
-                    onChange={(e) => handleSpecChange(idx, "key", e.target.value)}
-                    sx={{ flex: 1.5, "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
-                  />
-                  <TextField
-                    placeholder="Valor"
-                    size="small"
-                    type={s.type === "number" ? "number" : "text"}
-                    value={s.value}
-                    onChange={(e) => handleSpecChange(idx, "value", e.target.value)}
-                    sx={{ flex: 2, "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
-                  />
-                  <Select
-                    size="small"
-                    value={s.type}
-                    onChange={(e) => handleSpecChange(idx, "type", e.target.value)}
-                    sx={{ flex: 1, borderRadius: 1.5, fontSize: "0.8rem" }}
-                  >
-                    <MenuItem value="text">Texto</MenuItem>
-                    <MenuItem value="number">Num</MenuItem>
-                  </Select>
-                  <IconButton onClick={() => handleRemoveSpec(idx)} color="error" size="small">
-                    <DeleteOutline fontSize="small" />
-                  </IconButton>
-                </Stack>
+                <Box key={idx}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TextField
+                      placeholder="Clave"
+                      size="small"
+                      value={s.key}
+                      onChange={(e) => {
+                        handleSpecChange(idx, "key", e.target.value);
+                        if (errors[`spec_${idx}`]) {
+                          setErrors((prev) => {
+                            const next = { ...prev };
+                            delete next[`spec_${idx}`];
+                            return next;
+                          });
+                        }
+                      }}
+                      error={!!errors[`spec_${idx}`]}
+                      sx={{ flex: 1.5, "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+                    />
+                    <TextField
+                      placeholder="Valor"
+                      size="small"
+                      type={s.type === "number" ? "number" : "text"}
+                      value={s.value}
+                      onChange={(e) => {
+                        handleSpecChange(idx, "value", e.target.value);
+                        if (errors[`spec_${idx}`]) {
+                          setErrors((prev) => {
+                            const next = { ...prev };
+                            delete next[`spec_${idx}`];
+                            return next;
+                          });
+                        }
+                      }}
+                      sx={{ flex: 2, "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
+                    />
+                    <Select
+                      size="small"
+                      value={s.type}
+                      onChange={(e) => handleSpecChange(idx, "type", e.target.value)}
+                      sx={{ flex: 1, borderRadius: 1.5, fontSize: "0.8rem" }}
+                    >
+                      <MenuItem value="text">Texto</MenuItem>
+                      <MenuItem value="number">Num</MenuItem>
+                    </Select>
+                    <IconButton onClick={() => handleRemoveSpec(idx)} color="error" size="small">
+                      <DeleteOutline fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                  {errors[`spec_${idx}`] && (
+                    <FormHelperText error sx={{ ml: 0.5, mt: 0.5 }}>
+                      {errors[`spec_${idx}`]}
+                    </FormHelperText>
+                  )}
+                </Box>
               ))}
               {specs.length === 0 && (
                 <Typography variant="caption" color="text.disabled" textAlign="center">
                   {attributeDefinitions.length > 0
-                    ? "Puedes añadir campos personalizados adicionales si lo deseas."
+                    ? "Puedes añadir campos personalizados de los atributos permitidos si lo deseas."
                     : "No hay especificaciones. Añade una para detallar el producto."}
                 </Typography>
               )}

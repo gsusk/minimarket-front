@@ -1,5 +1,5 @@
 "use client"
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { FacetValue, SearchResult } from "../api/products";
 import { useRouter } from "next/navigation";
 import PriceRangeSlider from "./PriceRangeSlider";
@@ -30,6 +30,12 @@ export default function SearchFilterSideBar({
       params.set(filterKey, filterValue);
     }
     return `/search?${params.toString()}`;
+  };
+
+  const hasSearchTerm = Boolean(searchParams.q?.trim());
+
+  const isRequiredSearchAnchor = (filterKey: string, filterValue: string): boolean => {
+    return filterKey === "category" && isActiveFilter(filterKey, filterValue) && !hasSearchTerm;
   };
 
   if (!facets) {
@@ -69,6 +75,11 @@ export default function SearchFilterSideBar({
             const filterUrl = buildFilterUrl(key, facet.value);
 
             const handleClick = () => {
+              if (isRequiredSearchAnchor(key, facet.value)) {
+                onFilterClick?.();
+                return;
+              }
+
               router.push(filterUrl);
               onFilterClick?.();
             };

@@ -9,48 +9,63 @@ import {
   useTheme,
   Chip
 } from '@mui/material'
-import { Person, Email, Security } from '@mui/icons-material'
+import { Email } from '@mui/icons-material'
 import useMe from '@/app/api/user'
 
 export default function ProfilePage() {
   const { data: user } = useMe()
   const theme = useTheme()
 
+  const fieldSx = {
+    p: 2,
+    borderRadius: 1.5,
+    border: `1px solid ${theme.palette.divider}`,
+    bgcolor: 'grey.50',
+    minHeight: 88
+  }
+
   return (
-    <Stack spacing={4}>
+    <Stack spacing={3}>
       <Box>
-        <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'primary.light', color: 'primary.contrastText', display: 'flex' }}>
-            <Person fontSize="small" />
-          </Box>
-          Información Personal
+        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 0.5 }}>
+          Información personal
         </Typography>
-        <Paper elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 3, overflow: 'hidden' }}>
-          <Box sx={{ p: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          Datos básicos asociados a tu cuenta.
+        </Typography>
+
+        <Paper elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2, overflow: 'hidden' }}>
+          <Box sx={{ p: { xs: 2, md: 2.5 } }}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" gutterBottom>
-                  NOMBRE
-                </Typography>
-                <Typography variant="body1" fontWeight="500">
-                  {user?.firstName}
-                </Typography>
+                <Box sx={fieldSx}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" gutterBottom>
+                    Nombre
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {user?.firstName}
+                  </Typography>
+                </Box>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" gutterBottom>
-                  APELLIDO
-                </Typography>
-                <Typography variant="body1" fontWeight="500">
-                  {user?.lastName}
-                </Typography>
+                <Box sx={fieldSx}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" gutterBottom>
+                    Apellido
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {user?.lastName}
+                  </Typography>
+                </Box>
               </Grid>
               <Grid size={{ xs: 12 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" gutterBottom>
-                  CORREO ELECTRÓNICO
-                </Typography>
-                <Typography variant="body1" fontWeight="500" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Email fontSize="small" color="action" /> {user?.email}
-                </Typography>
+                <Box sx={fieldSx}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" gutterBottom>
+                    Correo electrónico
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                    <Email fontSize="small" color="action" /> {user?.email}
+                  </Typography>
+                </Box>
               </Grid>
             </Grid>
           </Box>
@@ -58,28 +73,34 @@ export default function ProfilePage() {
       </Box>
 
       <Box>
-        <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'secondary.light', color: 'secondary.contrastText', display: 'flex' }}>
-            <Security fontSize="small" />
-          </Box>
-          Seguridad de la Cuenta
+        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
+          Cuenta
         </Typography>
-        <Paper elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 3, overflow: 'hidden' }}>
-          <Box sx={{ p: 3 }}>
+        <Paper elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2, overflow: 'hidden' }}>
+          <Box sx={{ p: { xs: 2, md: 2.5 } }}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" gutterBottom>
-                  ID DE CUENTA
-                </Typography>
-                <Typography variant="body1" fontFamily="monospace" sx={{ bgcolor: 'grey.100', px: 1, borderRadius: 1, display: 'inline-block' }}>
-                  #{user?.id}
-                </Typography>
+                <Box sx={fieldSx}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" gutterBottom>
+                    ID de cuenta
+                  </Typography>
+                  <Typography variant="body1" fontFamily="monospace" fontWeight={600}>
+                    #{user?.id}
+                  </Typography>
+                </Box>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" gutterBottom>
-                  ESTADO DE MEMBRESÍA
-                </Typography>
-                <Chip label="ACTIVO" size="small" color="success" variant="outlined" sx={{ fontWeight: 'bold', borderRadius: 1 }} />
+                <Box sx={fieldSx}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" gutterBottom>
+                    Estado
+                  </Typography>
+                  <Chip
+                    label="Activo"
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontWeight: 700, borderRadius: 1, borderColor: 'divider', color: 'text.secondary' }}
+                  />
+                </Box>
               </Grid>
             </Grid>
           </Box>

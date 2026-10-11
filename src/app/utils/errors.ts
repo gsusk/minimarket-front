@@ -55,8 +55,25 @@ export const normalizeError = (error: unknown): AppError => {
         return new AuthError(data?.message || "No autorizado");
       }
 
+      if (status === 409) {
+        return new AppError(data?.message || "Conflicto con un recurso existente", data?.errorCode || "CONFLICT_ERROR");
+      }
+
       if (status === 400 && data?.validationErrors) {
-        return new ValidationError(data.validationErrors);
+        const issues: ValidationIssue[] = Array.isArray(data.validationErrors)
+          ? data.validationErrors.map((ve: any) => ({
+              field: ve.field ?? ve.attributeName ?? "",
+              message: ve.message ?? ve.errorMessage ?? "",
+            }))
+          : [];
+        const details = issues
+          .map((i) => (i.field ? `${i.field}: ${i.message}` : i.message))
+          .filter(Boolean)
+          .join(", ");
+        const message = data?.message && data.message !== "Validation Failed"
+          ? data.message
+          : (details ? `Error de validación: ${details}` : "Hubo un problema con los datos enviados");
+        return new ValidationError(issues, message);
       }
 
       return new AppError(data?.message || "Ocurrio un error en el servidor", data?.errorCode || "SERVER_ERROR");

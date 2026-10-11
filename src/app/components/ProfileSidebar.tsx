@@ -14,7 +14,7 @@ import {
   ListItemText,
   List
 } from '@mui/material'
-import { Logout, VerifiedUser, Person, ShoppingBag } from '@mui/icons-material'
+import { Logout, Person, ShoppingBag } from '@mui/icons-material'
 import useMe from '@/app/api/user'
 import { useRouter, usePathname } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
@@ -35,60 +35,57 @@ export default function ProfileSidebar() {
 
   const menuItems = [
     { text: 'Información Personal', icon: <Person />, path: '/profile' },
-    { text: 'Mis Ordenes', icon: <ShoppingBag />, path: '/profile/orders' },
+    { text: 'Mis Órdenes', icon: <ShoppingBag />, path: '/profile/orders' },
   ]
 
   return (
     <Paper elevation={0} sx={{
-      p: 4,
-      borderRadius: 4,
+      p: { xs: 2.5, md: 3 },
+      borderRadius: 2,
       border: `1px solid ${theme.palette.divider}`,
       position: { md: 'sticky' },
-      top: 24
+      top: 24,
+      bgcolor: 'background.paper'
     }}>
-      <Box sx={{ position: 'relative', display: 'inline-block', mb: 3, textAlign: 'center', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
         <Avatar
           sx={{
-            width: 120,
-            height: 120,
-            margin: '0 auto',
-            bgcolor: 'primary.main',
-            fontSize: '3rem',
-            fontWeight: 'bold',
-            boxShadow: theme.shadows[4]
+            width: 56,
+            height: 56,
+            bgcolor: 'grey.900',
+            fontSize: '1rem',
+            fontWeight: 700,
+            color: 'common.white'
           }}
         >
           {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
         </Avatar>
-        <Box sx={{
-          position: 'absolute',
-          bottom: 0,
-          right: '50%',
-          transform: 'translateX(350%)',
-          bgcolor: 'success.main',
-          width: 24,
-          height: 24,
-          borderRadius: '50%',
-          border: '3px solid white'
-        }} />
+        <Box minWidth={0}>
+          <Typography variant="subtitle1" fontWeight={700} noWrap title={`${user?.firstName} ${user?.lastName}`}>
+            {user?.firstName} {user?.lastName}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" noWrap title={user?.email}>
+            {user?.email}
+          </Typography>
+          <Chip
+            label="Cuenta activa"
+            size="small"
+            variant="outlined"
+            sx={{
+              mt: 1,
+              height: 22,
+              borderRadius: 1,
+              color: 'text.secondary',
+              borderColor: 'divider',
+              fontWeight: 600
+            }}
+          />
+        </Box>
       </Box>
 
-      <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="h5" fontWeight="800" gutterBottom noWrap title={`${user?.firstName} ${user?.lastName}`}>
-          {user?.firstName} {user?.lastName}
-        </Typography>
-        <Chip
-          icon={<VerifiedUser sx={{ fontSize: '1rem !important' }} />}
-          label="Cliente Verificado"
-          color="primary"
-          size="small"
-          sx={{ fontWeight: 'bold', mb: 3 }}
-        />
-      </Box>
+      <Divider sx={{ my: 2.5 }} />
 
-      <Divider sx={{ my: 3 }} />
-
-      <List component="nav">
+      <List component="nav" disablePadding>
         {menuItems.map((item) => {
           const isActive = pathname === item.path
           return (
@@ -99,16 +96,21 @@ export default function ProfileSidebar() {
                 selected={isActive}
                 disabled={user?.role != "USER"}
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 1.5,
+                  px: 1.5,
+                  py: 1.1,
+                  color: 'text.secondary',
                   '&.Mui-selected': {
-                    bgcolor: 'primary.lighter',
-                    color: 'primary.main',
-                    borderLeft: `4px solid ${theme.palette.primary.main}`,
-                    '&:hover': { bgcolor: 'primary.lighter' }
+                    bgcolor: 'grey.100',
+                    color: 'text.primary',
+                    '&:hover': { bgcolor: 'grey.100' }
+                  },
+                  '&:hover': {
+                    bgcolor: 'grey.50'
                   }
                 }}
               >
-                <ListItemIcon sx={{ color: isActive ? 'primary.main' : 'text.secondary', minWidth: 40 }}>
+                <ListItemIcon sx={{ color: isActive ? 'text.primary' : 'text.disabled', minWidth: 36, '& svg': { fontSize: 20 } }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: isActive ? 700 : 500 }} />
@@ -118,20 +120,24 @@ export default function ProfileSidebar() {
         })}
       </List>
 
-      <Divider sx={{ my: 3 }} />
+      <Divider sx={{ my: 2.5 }} />
 
       <Button
-        variant="contained"
-        color="error"
+        variant="outlined"
         startIcon={<Logout />}
         onClick={handleLogout}
         fullWidth
         sx={{
-          borderRadius: 2,
-          py: 1.5,
-          fontWeight: 'bold',
-          boxShadow: theme.shadows[2],
+          borderRadius: 1.5,
+          py: 1.1,
+          fontWeight: 700,
           textTransform: 'none',
+          color: 'text.primary',
+          borderColor: 'divider',
+          '&:hover': {
+            borderColor: 'grey.500',
+            bgcolor: 'grey.50'
+          }
         }}
       >
         Cerrar Sesión

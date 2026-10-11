@@ -9,7 +9,6 @@ import {
   Stack,
   useMediaQuery,
   useTheme,
-  Tooltip,
 } from "@mui/material";
 import {
   DashboardOutlined,
@@ -23,17 +22,18 @@ import {
 } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 
-const SIDEBAR_W = 220;
+const SIDEBAR_W = 248;
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: DashboardOutlined, href: "/admin" },
   { label: "Productos", icon: StorefrontOutlined, href: "/admin/products" },
   { label: "Inventario", icon: InventoryOutlined, href: "/admin/inventory" },
-  { label: "Ordenes", icon: ShoppingCartOutlined, href: "/admin/orders" },
-  { label: "Categorias", icon: CategoryOutlined, href: "/admin/categories" },
+  { label: "Órdenes", icon: ShoppingCartOutlined, href: "/admin/orders" },
+  { label: "Categorías", icon: CategoryOutlined, href: "/admin/categories" },
 ];
 
-const ACCENT = "#6366f1";
+const INK = "#14211c";
+const SIDEBAR_BG = "#10251f";
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -47,29 +47,59 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        bgcolor: "#0e0e0e",
+        bgcolor: SIDEBAR_BG,
         color: "white",
         userSelect: "none",
+        backgroundImage:
+          "linear-gradient(180deg, rgba(20,91,70,0.5), rgba(16,37,31,0) 34%), radial-gradient(circle at 20% 10%, rgba(255,255,255,0.08), transparent 28%)",
       }}
     >
-      <Box sx={{ px: 3, pt: 3.5, pb: 2.5 }}>
+      <Box sx={{ px: 2.5, pt: 3, pb: 2.5 }}>
+        <Stack direction="row" alignItems="center" gap={1.5}>
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: 2,
+              display: "grid",
+              placeItems: "center",
+              bgcolor: "#f4b942",
+              color: INK,
+              fontWeight: 900,
+              boxShadow: "0 12px 32px rgba(0,0,0,0.22)",
+            }}
+          >
+            M
+          </Box>
+          <Box>
+            <Typography
+              variant="h6"
+              fontWeight={900}
+              letterSpacing={-0.4}
+              sx={{ color: "white", lineHeight: 1 }}
+            >
+              Minimarket
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.48)", fontSize: "0.72rem" }}
+            >
+              Administración
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
+
+      <Box sx={{ px: 2.5, pb: 1 }}>
         <Typography
           variant="overline"
-          sx={{ color: "rgba(255,255,255,0.3)", letterSpacing: 2, fontSize: "0.6rem", display: "block" }}
+          sx={{ color: "rgba(255,255,255,0.36)", letterSpacing: 1.4, fontSize: "0.62rem", display: "block" }}
         >
-          Panel de control
-        </Typography>
-        <Typography
-          variant="h6"
-          fontWeight={800}
-          letterSpacing={-0.5}
-          sx={{ color: "white", lineHeight: 1.2, mt: 0.25 }}
-        >
-          Minimarket
+          Operación
         </Typography>
       </Box>
 
-      <Box sx={{ mx: 3, height: "1px", bgcolor: "rgba(255,255,255,0.07)", mb: 1 }} />
+      <Box sx={{ mx: 2.5, height: "1px", bgcolor: "rgba(255,255,255,0.08)", mb: 1 }} />
 
       <Box sx={{ flex: 1, px: 1.5, py: 1 }}>
         {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
@@ -84,14 +114,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 alignItems: "center",
                 gap: 1.5,
                 px: 1.75,
-                py: 1.1,
-                mb: 0.25,
-                borderRadius: 1.5,
+                py: 1.25,
+                mb: 0.4,
+                borderRadius: 2,
                 cursor: "pointer",
-                transition: "background 0.15s",
-                bgcolor: active ? "rgba(99,102,241,0.15)" : "transparent",
+                transition: "background 0.15s, transform 0.15s, color 0.15s",
+                bgcolor: active ? "rgba(255,255,255,0.1)" : "transparent",
+                border: "1px solid",
+                borderColor: active ? "rgba(255,255,255,0.12)" : "transparent",
                 "&:hover": {
-                  bgcolor: active ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.05)",
+                  bgcolor: active ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.06)",
+                  transform: "translateX(2px)",
                 },
               }}
             >
@@ -104,14 +137,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     bottom: "20%",
                     width: 3,
                     borderRadius: 4,
-                    bgcolor: ACCENT,
+                    bgcolor: "#f4b942",
                   }}
                 />
               )}
               <Icon
                 sx={{
                   fontSize: 18,
-                  color: active ? ACCENT : "rgba(255,255,255,0.4)",
+                  color: active ? "#f4b942" : "rgba(255,255,255,0.44)",
                   flexShrink: 0,
                   transition: "color 0.15s",
                 }}
@@ -121,7 +154,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 sx={{
                   color: active ? "white" : "rgba(255,255,255,0.5)",
                   fontWeight: active ? 700 : 400,
-                  fontSize: "0.855rem",
+                  fontSize: "0.86rem",
                   transition: "color 0.15s",
                 }}
               >
@@ -132,7 +165,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </Box>
 
-      <Box sx={{ mx: 3, height: "1px", bgcolor: "rgba(255,255,255,0.07)" }} />
+      <Box
+        sx={{
+          mx: 2,
+          mb: 1.5,
+          p: 1.5,
+          borderRadius: 2,
+          bgcolor: "rgba(255,255,255,0.07)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.42)" }}>
+          Gestión de catálogo, stock y pedidos en un solo lugar.
+        </Typography>
+      </Box>
+
+      <Box sx={{ mx: 2.5, height: "1px", bgcolor: "rgba(255,255,255,0.08)" }} />
       <Box
         onClick={() => go("/")}
         sx={{
@@ -167,10 +215,11 @@ function MobileTopbar({ onOpen }: { onOpen: () => void }) {
       sx={{
         px: 2,
         py: 1.25,
-        bgcolor: "#0e0e0e",
+        bgcolor: SIDEBAR_BG,
         position: "sticky",
         top: 0,
         zIndex: 99,
+        boxShadow: "0 10px 30px rgba(15,35,29,0.16)",
       }}
     >
       <IconButton onClick={onOpen} size="small" sx={{ color: "white", mr: 1.5 }}>
@@ -189,7 +238,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [open, setOpen] = useState(false);
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f4" }}>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        bgcolor: "#f6f4ee",
+        backgroundImage:
+          "linear-gradient(180deg, rgba(244,185,66,0.13), rgba(246,244,238,0) 220px), radial-gradient(circle at 85% 0%, rgba(15,159,117,0.12), transparent 32%)",
+      }}
+    >
       {!isMobile && (
         <Box
           sx={{

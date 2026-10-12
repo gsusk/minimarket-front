@@ -98,7 +98,7 @@ export function ShippingPhase({
             <span>Procesando...</span>
           </Stack>
         ) : (
-          "Confirmar orden"
+          "Continuar al pago"
         )}
       </Button>
     </Box>

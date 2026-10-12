@@ -1,14 +1,15 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import { Check, Inventory2Outlined, PlaceOutlined, CreditCardOutlined } from "@mui/icons-material";
+import { Check, Inventory2Outlined, PlaceOutlined, CreditCardOutlined, CheckCircleOutline } from "@mui/icons-material";
 
-export type Phase = "review" | "shipping" | "confirmation";
+export type Phase = "review" | "shipping" | "payment" | "confirmation";
 
 const STEPS = [
   { key: "review", label: "Resumen", Icon: Inventory2Outlined },
-  { key: "shipping", label: "Envio", Icon: PlaceOutlined },
-  { key: "confirmation", label: "Confirmacion", Icon: CreditCardOutlined },
+  { key: "shipping", label: "Envío", Icon: PlaceOutlined },
+  { key: "payment", label: "Pago", Icon: CreditCardOutlined },
+  { key: "confirmation", label: "Confirmación", Icon: CheckCircleOutline },
 ] as const;
 
 export function StepIndicator({ phase }: { phase: Phase }) {

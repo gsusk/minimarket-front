@@ -8,6 +8,7 @@ import { useCart, CART_QUERY_KEY } from "../../components/CartProvider";
 import { StepIndicator, Phase } from "./components/StepIndicator";
 import { ReviewPhase } from "./components/ReviewPhase";
 import { ShippingPhase } from "./components/ShippingPhase";
+import { PaymentPhase } from "./components/PaymentPhase";
 import { ConfirmationPhase } from "./components/ConfirmationPhase";
 
 const EMPTY_FORM: CheckoutRequest = {
@@ -25,14 +26,20 @@ export default function CheckoutPage() {
   const [phase, setPhase] = useState<Phase>("review");
   const [formData, setFormData] = useState<CheckoutRequest>(EMPTY_FORM);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [paymentData, setPaymentData] = useState<CreatePaymentResponse | null>(null);
   const [confirmationResult, setConfirmationResult] = useState<CreatePaymentResponse | null>(null);
 
   const checkoutMutation = useMutation({
     mutationFn: processCheckout,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-      setConfirmationResult(data);
-      setPhase("confirmation");
+      setPaymentData(data);
+      if (data.status === "completed") {
+        queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+        setConfirmationResult(data);
+        setPhase("confirmation");
+      } else {
+        setPhase("payment");
+      }
     },
     onError: (error: unknown) => {
       const msg = error instanceof Error ? error.message : "Error al procesar la orden";
@@ -57,6 +64,12 @@ export default function CheckoutPage() {
       return;
     }
     checkoutMutation.mutate(formData);
+  };
+
+  const handlePaymentSuccess = (result: CreatePaymentResponse) => {
+    queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+    setConfirmationResult(result);
+    setPhase("confirmation");
   };
 
   return (
@@ -110,6 +123,14 @@ export default function CheckoutPage() {
               onSubmit={handleSubmit}
               isPending={checkoutMutation.isPending}
               error={errorMessage}
+            />
+          )}
+
+          {phase === "payment" && paymentData && (
+            <PaymentPhase
+              paymentData={paymentData}
+              onSuccess={handlePaymentSuccess}
+              onBack={() => setPhase("shipping")}
             />
           )}
 

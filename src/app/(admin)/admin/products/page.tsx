@@ -19,6 +19,7 @@ import {
   MenuItem,
   Chip,
   FormHelperText,
+  Paper,
 } from "@mui/material";
 import { Add, DeleteOutline, EditOutlined, CategoryOutlined, TuneOutlined } from "@mui/icons-material";
 import { useState, useEffect, useMemo } from "react";
@@ -51,6 +52,7 @@ function formatAttributeLabel(name: string): string {
     .join(" ");
 }
 
+
 function ProductDialog({
   open,
   initial,
@@ -77,13 +79,15 @@ function ProductDialog({
     queryFn: getCategories,
   });
 
-  const selectedCategory = useMemo(() => {
-    return categories.find((c) => c.id === form.categoryId);
-  }, [categories, form.categoryId]);
+  const selectedCategory = useMemo(
+    () => categories.find((c) => c.id === form.categoryId),
+    [categories, form.categoryId]
+  );
 
-  const attributeDefinitions: CategoryAttributeDefinition[] = useMemo(() => {
-    return selectedCategory?.attributeDefinitions ?? [];
-  }, [selectedCategory]);
+  const attributeDefinitions: CategoryAttributeDefinition[] = useMemo(
+    () => selectedCategory?.attributeDefinitions ?? [],
+    [selectedCategory]
+  );
 
   useEffect(() => {
     if (open) {
@@ -215,7 +219,8 @@ function ProductDialog({
     if (!form.name.trim()) newErrors.name = "El nombre es requerido";
     if (!form.brand.trim()) newErrors.brand = "La marca es requerida";
     if (!form.description.trim()) newErrors.description = "La descripcion es requerida";
-    if (form.price === undefined || form.price === null || form.price <= 0) newErrors.price = "El precio debe ser mayor a 0";
+    if (form.price === undefined || form.price === null || form.price <= 0)
+      newErrors.price = "El precio debe ser mayor a 0";
     if (!form.categoryId) newErrors.categoryId = "Debe seleccionar una categoria";
     if (form.stock < 0) newErrors.stock = "El stock no puede ser negativo";
 
@@ -224,7 +229,8 @@ function ProductDialog({
     attributeDefinitions.forEach((def) => {
       const val = categoryAttrs[def.name];
       const hasVal = val !== undefined && val !== null && String(val).trim() !== "";
-      const isSatisfiedByBrand = def.name.toLowerCase() === "marca" && form.brand.trim().length > 0;
+      const isSatisfiedByBrand =
+        def.name.toLowerCase() === "marca" && form.brand.trim().length > 0;
 
       if (def.required) {
         const inCustom = specs.some(
@@ -302,13 +308,13 @@ function ProductDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-      <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+      <DialogTitle sx={{ fontWeight: 700, fontSize: "1rem", pb: 1 }}>
         {initial.name ? "Editar producto" : "Nuevo producto"}
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 1.5 }}>
             {error}
           </Alert>
         )}
@@ -396,26 +402,36 @@ function ProductDialog({
                 </MenuItem>
               ))}
             </Select>
-            {errors.categoryId && (
-              <FormHelperText>{errors.categoryId}</FormHelperText>
-            )}
+            {errors.categoryId && <FormHelperText>{errors.categoryId}</FormHelperText>}
           </FormControl>
 
           {attributeDefinitions.length > 0 && (
             <Box
               sx={{
                 p: 2,
-                borderRadius: 2,
-                bgcolor: "grey.50",
-                border: "1px solid rgba(0,0,0,0.08)",
+                borderRadius: 1.5,
+                bgcolor: "#f9fafb",
+                border: "1px solid #e5e7eb",
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
-                <CategoryOutlined fontSize="small" color="primary" />
-                <Typography variant="subtitle2" fontWeight={700}>
-                  Atributos permitidos para {selectedCategory?.categoryName}
+                <CategoryOutlined sx={{ fontSize: 16, color: "#6b7280" }} />
+                <Typography sx={{ fontSize: "0.82rem", fontWeight: 700, color: "#374151" }}>
+                  Atributos de {selectedCategory?.categoryName}
                 </Typography>
-                <Chip size="small" label={`${attributeDefinitions.length} atributos`} sx={{ height: 20, fontSize: "0.7rem", bgcolor: "primary.50", color: "primary.main", fontWeight: 600 }} />
+                <Box
+                  sx={{
+                    fontSize: "0.65rem",
+                    fontWeight: 600,
+                    color: "#6366f1",
+                    bgcolor: "#eef2ff",
+                    px: 0.75,
+                    py: 0.2,
+                    borderRadius: 0.75,
+                  }}
+                >
+                  {attributeDefinitions.length}
+                </Box>
               </Stack>
 
               <Stack spacing={1.5}>
@@ -434,13 +450,9 @@ function ProductDialog({
                           onChange={(e) => handleCategoryAttrChange(def.name, e.target.value)}
                           sx={{ borderRadius: 1.5, bgcolor: "white" }}
                         >
-                          <MenuItem value="">
-                            <em>Ninguno</em>
-                          </MenuItem>
+                          <MenuItem value=""><em>Ninguno</em></MenuItem>
                           {(def.options || []).map((opt) => (
-                            <MenuItem key={String(opt)} value={opt}>
-                              {String(opt)}
-                            </MenuItem>
+                            <MenuItem key={String(opt)} value={opt}>{String(opt)}</MenuItem>
                           ))}
                         </Select>
                         {hasError && <FormHelperText>{errors[errorKey]}</FormHelperText>}
@@ -461,9 +473,7 @@ function ProductDialog({
                           }}
                           sx={{ borderRadius: 1.5, bgcolor: "white" }}
                         >
-                          <MenuItem value="">
-                            <em>No especificado</em>
-                          </MenuItem>
+                          <MenuItem value=""><em>No especificado</em></MenuItem>
                           <MenuItem value="true">Sí</MenuItem>
                           <MenuItem value="false">No</MenuItem>
                         </Select>
@@ -480,7 +490,7 @@ function ProductDialog({
                           def.max !== undefined && def.max !== null ? `Máx: ${def.max}` : null,
                         ]
                           .filter(Boolean)
-                          .join(" • ");
+                          .join(" · ");
 
                     return (
                       <TextField
@@ -519,18 +529,23 @@ function ProductDialog({
           <Box>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
               <Stack direction="row" spacing={1} alignItems="center">
-                <TuneOutlined fontSize="small" color="action" />
-                <Typography variant="subtitle2" fontWeight={600}>
+                <TuneOutlined sx={{ fontSize: 15, color: "#9ca3af" }} />
+                <Typography sx={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>
                   Especificaciones adicionales
                 </Typography>
               </Stack>
-              <Button size="small" onClick={handleAddSpec} startIcon={<Add />} sx={{ textTransform: "none" }}>
-                Anadir
+              <Button
+                size="small"
+                onClick={handleAddSpec}
+                startIcon={<Add sx={{ fontSize: 14 }} />}
+                sx={{ textTransform: "none", fontSize: "0.78rem", color: "#6366f1" }}
+              >
+                Añadir
               </Button>
             </Stack>
             {attributeDefinitions.length > 0 && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-                Atributos permitidos en esta categoría: {attributeDefinitions.map((d) => d.name).join(", ")}
+              <Typography sx={{ fontSize: "0.72rem", color: "#9ca3af", mb: 1 }}>
+                Atributos permitidos: {attributeDefinitions.map((d) => d.name).join(", ")}
               </Typography>
             )}
             <Stack spacing={1}>
@@ -581,7 +596,7 @@ function ProductDialog({
                       <MenuItem value="number">Num</MenuItem>
                     </Select>
                     <IconButton onClick={() => handleRemoveSpec(idx)} color="error" size="small">
-                      <DeleteOutline fontSize="small" />
+                      <DeleteOutline sx={{ fontSize: 17 }} />
                     </IconButton>
                   </Stack>
                   {errors[`spec_${idx}`] && (
@@ -592,9 +607,9 @@ function ProductDialog({
                 </Box>
               ))}
               {specs.length === 0 && (
-                <Typography variant="caption" color="text.disabled" textAlign="center">
+                <Typography sx={{ fontSize: "0.75rem", color: "#9ca3af", textAlign: "center", py: 1 }}>
                   {attributeDefinitions.length > 0
-                    ? "Puedes añadir campos personalizados de los atributos permitidos si lo deseas."
+                    ? "Puedes añadir campos personalizados si lo deseas."
                     : "No hay especificaciones. Añade una para detallar el producto."}
                 </Typography>
               )}
@@ -602,7 +617,7 @@ function ProductDialog({
           </Box>
 
           <TextField
-            label="URLs de imagenes (una por linea)"
+            label="URLs de imágenes (una por línea)"
             size="small"
             multiline
             rows={2}
@@ -614,14 +629,21 @@ function ProductDialog({
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} sx={{ color: "text.secondary" }}>
+        <Button onClick={onClose} sx={{ color: "#6b7280", textTransform: "none" }}>
           Cancelar
         </Button>
         <Button
           variant="contained"
           onClick={handleSave}
           disabled={isSaving}
-          sx={{ borderRadius: 1.5, bgcolor: "text.primary", color: "white", "&:hover": { bgcolor: "grey.800" } }}
+          sx={{
+            borderRadius: 1.5,
+            bgcolor: "#111827",
+            color: "white",
+            textTransform: "none",
+            fontWeight: 600,
+            "&:hover": { bgcolor: "#1f2937" },
+          }}
         >
           {isSaving ? "Guardando..." : "Guardar"}
         </Button>
@@ -655,7 +677,8 @@ export default function AdminProductsPage() {
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateProductPayload }) => adminUpdateProduct(id, data),
+    mutationFn: ({ id, data }: { id: number; data: CreateProductPayload }) =>
+      adminUpdateProduct(id, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
       setEditing(null);
@@ -698,50 +721,58 @@ export default function AdminProductsPage() {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
-          <Typography variant="h4" fontWeight={900} letterSpacing={-1.5}>
+          <Typography
+            sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: 1 }}
+          >
+            Gestión
+          </Typography>
+          <Typography sx={{ fontSize: "1.6rem", fontWeight: 800, color: "#111827", mt: 0.25 }}>
             Productos
           </Typography>
-          <Typography variant="body2" color="text.disabled" mt={0.5}>
-            Gestiona el catalogo de productos
+          <Typography sx={{ fontSize: "0.85rem", color: "#6b7280", mt: 0.5 }}>
+            Gestiona el catálogo de productos
           </Typography>
         </Box>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<Add sx={{ fontSize: 17 }} />}
           onClick={() => {
             setDialogOpen(true);
             setMutError(null);
           }}
-          sx={{ borderRadius: 1.5, bgcolor: "text.primary", color: "white", "&:hover": { bgcolor: "grey.800" } }}
+          sx={{
+            borderRadius: 1.5,
+            bgcolor: "#111827",
+            color: "white",
+            textTransform: "none",
+            fontWeight: 600,
+            boxShadow: "none",
+            "&:hover": { bgcolor: "#1f2937", boxShadow: "none" },
+          }}
         >
           Nuevo producto
         </Button>
       </Stack>
 
-      <Box sx={{ borderRadius: 3, border: "1px solid rgba(0,0,0,0.07)", bgcolor: "white", overflow: "hidden" }}>
-        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0,0,0,0.06)", bgcolor: "transparent" }}>
+      <Paper
+        elevation={0}
+        sx={{ borderRadius: 2, border: "1px solid #e5e7eb", bgcolor: "white", overflow: "hidden" }}
+      >
+        <Box sx={{ px: 3, py: 1.75, borderBottom: "1px solid #f3f4f6" }}>
           <Typography
-            variant="caption"
-            fontWeight={700}
-            color="text.disabled"
-            letterSpacing={0.8}
-            sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}
+            sx={{ fontSize: "0.68rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.5 }}
           >
             {products.length} productos
           </Typography>
         </Box>
 
         {isLoading ? (
-          <Box sx={{ px: 3, py: 5, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">
-              Cargando productos...
-            </Typography>
+          <Box sx={{ px: 3, py: 6, textAlign: "center" }}>
+            <Typography sx={{ fontSize: "0.85rem", color: "#9ca3af" }}>Cargando productos...</Typography>
           </Box>
         ) : products.length === 0 ? (
-          <Box sx={{ px: 3, py: 5, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">
-              No hay productos registrados.
-            </Typography>
+          <Box sx={{ px: 3, py: 6, textAlign: "center" }}>
+            <Typography sx={{ fontSize: "0.85rem", color: "#9ca3af" }}>No hay productos registrados.</Typography>
           </Box>
         ) : (
           products.map((p, idx) => (
@@ -753,40 +784,40 @@ export default function AdminProductsPage() {
                 sx={{ px: 3, py: 2 }}
               >
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600} noWrap>
+                  <Typography sx={{ fontSize: "0.88rem", fontWeight: 600, color: "#111827" }} noWrap>
                     {p.name}
                   </Typography>
-                  <Typography variant="caption" color="text.disabled">
-                    {p.brand} — Stock: {p.stock}
+                  <Typography sx={{ fontSize: "0.75rem", color: "#9ca3af" }}>
+                    {p.brand} · Stock: {p.stock}
                   </Typography>
                 </Box>
-                <Stack direction="row" alignItems="center" gap={2}>
-                  <Typography variant="body2" fontWeight={700}>
+                <Stack direction="row" alignItems="center" gap={1.5}>
+                  <Typography sx={{ fontSize: "0.88rem", fontWeight: 700, color: "#111827" }}>
                     ${toCurrency(toNumber(p.price))}
                   </Typography>
                   <IconButton
                     size="small"
                     onClick={() => openEdit(p)}
-                    sx={{ color: "text.secondary" }}
+                    sx={{ color: "#6b7280", "&:hover": { color: "#111827" } }}
                     data-testid={`edit-btn-${p.id}`}
                   >
-                    <EditOutlined sx={{ fontSize: 18 }} />
+                    <EditOutlined sx={{ fontSize: 17 }} />
                   </IconButton>
                   <IconButton
                     size="small"
-                    sx={{ color: "error.main" }}
                     onClick={() => setDeleteTarget(p.id)}
+                    sx={{ color: "#9ca3af", "&:hover": { color: "#ef4444" } }}
                     data-testid={`delete-btn-${p.id}`}
                   >
-                    <DeleteOutline sx={{ fontSize: 18 }} />
+                    <DeleteOutline sx={{ fontSize: 17 }} />
                   </IconButton>
                 </Stack>
               </Stack>
-              {idx < products.length - 1 && <Divider />}
+              {idx < products.length - 1 && <Divider sx={{ borderColor: "#f3f4f6" }} />}
             </Box>
           ))
         )}
-      </Box>
+      </Paper>
 
       <ProductDialog
         open={dialogOpen}
@@ -813,16 +844,19 @@ export default function AdminProductsPage() {
         onClose={() => setDeleteTarget(null)}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { borderRadius: 3 } }}
+        PaperProps={{ sx: { borderRadius: 2 } }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Eliminar producto</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1rem" }}>Eliminar producto</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary">
-            Esta seguro de que desea eliminar este producto? Esta accion no se puede deshacer.
+          <Typography sx={{ fontSize: "0.88rem", color: "#6b7280" }}>
+            ¿Está seguro de que desea eliminar este producto? Esta acción no se puede deshacer.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setDeleteTarget(null)} sx={{ color: "text.secondary" }}>
+          <Button
+            onClick={() => setDeleteTarget(null)}
+            sx={{ color: "#6b7280", textTransform: "none" }}
+          >
             Cancelar
           </Button>
           <Button
@@ -830,7 +864,7 @@ export default function AdminProductsPage() {
             color="error"
             disabled={deleteMut.isPending}
             onClick={() => deleteTarget && deleteMut.mutate(deleteTarget)}
-            sx={{ borderRadius: 1.5 }}
+            sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 600 }}
           >
             {deleteMut.isPending ? "Eliminando..." : "Eliminar"}
           </Button>

@@ -16,15 +16,12 @@ import {
   TableRow,
 } from "@mui/material";
 import {
-  TrendingUpOutlined,
   CheckCircleOutline,
   PendingOutlined,
   CancelOutlined,
   ArrowForwardOutlined,
   ReceiptLongOutlined,
   AccountBalanceWalletOutlined,
-  BoltOutlined,
-  Circle,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -34,36 +31,12 @@ import { OrderSummary } from "../../api/orders";
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; bg: string; text: string; border: string; dot: string }
+  { label: string; bg: string; text: string; dot: string }
 > = {
-  completed: {
-    label: "Completada",
-    bg: "#ecfdf5",
-    text: "#065f46",
-    border: "#a7f3d0",
-    dot: "#10b981",
-  },
-  pending: {
-    label: "Pendiente",
-    bg: "#fffbeb",
-    text: "#92400e",
-    border: "#fde68a",
-    dot: "#f59e0b",
-  },
-  cancelled: {
-    label: "Cancelada",
-    bg: "#fff1f2",
-    text: "#9f1239",
-    border: "#fecdd3",
-    dot: "#ef4444",
-  },
-  processing: {
-    label: "En proceso",
-    bg: "#eff6ff",
-    text: "#1e40af",
-    border: "#bfdbfe",
-    dot: "#3b82f6",
-  },
+  completed: { label: "Completada", bg: "#f0fdf4", text: "#15803d", dot: "#22c55e" },
+  pending:   { label: "Pendiente",  bg: "#fefce8", text: "#a16207", dot: "#eab308" },
+  cancelled: { label: "Cancelada",  bg: "#fef2f2", text: "#b91c1c", dot: "#ef4444" },
+  processing:{ label: "En proceso", bg: "#eff6ff", text: "#1d4ed8", dot: "#3b82f6" },
 };
 
 function Val({ loading, children }: { loading: boolean; children: React.ReactNode }) {
@@ -75,7 +48,7 @@ function StatCard({
   title,
   value,
   description,
-  badgeText,
+  badge,
   icon,
   iconBg,
   iconColor,
@@ -84,7 +57,7 @@ function StatCard({
   title: string;
   value: number;
   description: string;
-  badgeText: string;
+  badge: string;
   icon: React.ReactNode;
   iconBg: string;
   iconColor: string;
@@ -96,24 +69,20 @@ function StatCard({
       sx={{
         flex: 1,
         minWidth: 0,
-        p: 3,
-        borderRadius: 2.5,
-        border: "1px solid",
-        borderColor: "#e2e8f0",
+        p: 2.5,
+        borderRadius: 2,
+        border: "1px solid #e5e7eb",
         bgcolor: "#ffffff",
-        transition: "all 0.2s ease-in-out",
-        "&:hover": {
-          boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.06)",
-          borderColor: "#cbd5e1",
-        },
+        transition: "box-shadow 0.15s",
+        "&:hover": { boxShadow: "0 4px 16px rgba(0,0,0,0.06)" },
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box
           sx={{
-            width: 42,
-            height: 42,
-            borderRadius: 2,
+            width: 38,
+            height: 38,
+            borderRadius: 1.5,
             bgcolor: iconBg,
             color: iconColor,
             display: "grid",
@@ -122,45 +91,72 @@ function StatCard({
         >
           {icon}
         </Box>
-        <Chip
-          label={badgeText}
-          size="small"
+        <Typography
           sx={{
             fontSize: "0.68rem",
             fontWeight: 600,
-            bgcolor: "#f1f5f9",
-            color: "#475569",
-            borderRadius: 1.5,
+            color: "#6b7280",
+            bgcolor: "#f3f4f6",
+            px: 1,
+            py: 0.3,
+            borderRadius: 1,
           }}
-        />
+        >
+          {badge}
+        </Typography>
       </Stack>
 
       <Typography
-        variant="caption"
-        fontWeight={700}
-        color="#64748b"
-        letterSpacing={0.5}
-        sx={{ textTransform: "uppercase", fontSize: "0.68rem" }}
+        sx={{
+          fontSize: "0.68rem",
+          fontWeight: 700,
+          color: "#9ca3af",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
       >
         {title}
       </Typography>
 
       <Typography
-        variant="h4"
-        fontWeight={800}
-        letterSpacing={-1}
-        mt={0.5}
-        mb={0.5}
-        color="#0f172a"
-        lineHeight={1.1}
+        sx={{ fontSize: "1.9rem", fontWeight: 800, color: "#111827", lineHeight: 1.15, mt: 0.5, mb: 0.5 }}
       >
         <Val loading={loading}>{value}</Val>
       </Typography>
 
-      <Typography variant="caption" color="#94a3b8" display="block">
+      <Typography sx={{ fontSize: "0.78rem", color: "#9ca3af" }}>
         {description}
       </Typography>
     </Paper>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const key = status.toLowerCase();
+  const cfg = STATUS_CONFIG[key] ?? {
+    label: status,
+    bg: "#f3f4f6",
+    text: "#6b7280",
+    dot: "#9ca3af",
+  };
+  return (
+    <Stack
+      direction="row"
+      alignItems="center"
+      gap={0.75}
+      sx={{
+        display: "inline-flex",
+        px: 1.25,
+        py: 0.35,
+        borderRadius: 1,
+        bgcolor: cfg.bg,
+      }}
+    >
+      <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: cfg.dot }} />
+      <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: cfg.text }}>
+        {cfg.label}
+      </Typography>
+    </Stack>
   );
 }
 
@@ -172,17 +168,17 @@ export default function AdminDashboard() {
     queryFn: adminGetAllOrders,
   });
 
-  const total = orders.length;
+  const total     = orders.length;
   const completed = orders.filter((o) => o.status.toLowerCase() === "completed").length;
-  const pending = orders.filter((o) => o.status.toLowerCase() === "pending").length;
+  const pending   = orders.filter((o) => o.status.toLowerCase() === "pending").length;
   const cancelled = orders.filter((o) => o.status.toLowerCase() === "cancelled").length;
-  const revenue = orders
+  const revenue   = orders
     .filter((o) => o.status.toLowerCase() === "completed")
     .reduce((s, o) => s + toNumber(o.totalAmount), 0);
 
-  const averageTicket = completed > 0 ? revenue / completed : 0;
+  const averageTicket  = completed > 0 ? revenue / completed : 0;
   const conversionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0";
-  const recentOrders = [...orders].slice(0, 10);
+  const recentOrders   = [...orders].slice(0, 10);
 
   const formattedDate = new Date().toLocaleDateString("es-CO", {
     weekday: "long",
@@ -202,227 +198,132 @@ export default function AdminDashboard() {
       >
         <Box>
           <Typography
-            variant="caption"
-            fontWeight={700}
-            color="primary.main"
-            letterSpacing={1.2}
-            sx={{ textTransform: "uppercase", fontSize: "0.7rem" }}
+            sx={{
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              color: "#6366f1",
+              letterSpacing: 1,
+              textTransform: "uppercase",
+            }}
           >
-            PANEL DE ADMINISTRACIÓN
+            Panel de administración
           </Typography>
-          <Typography
-            variant="h4"
-            fontWeight={900}
-            letterSpacing={-1}
-            color="#0f172a"
-            mt={0.25}
-          >
-            Dashboard Operativo
+          <Typography sx={{ fontSize: "1.6rem", fontWeight: 800, color: "#111827", mt: 0.25, lineHeight: 1.2 }}>
+            Dashboard
           </Typography>
-          <Typography variant="body2" color="#64748b" mt={0.5}>
-            Métricas de ventas, estado transaccional y flujo de órdenes en tiempo real.
+          <Typography sx={{ fontSize: "0.85rem", color: "#6b7280", mt: 0.5 }}>
+            {formattedDate}
           </Typography>
         </Box>
 
-        <Stack direction="row" alignItems="center" gap={1.5} flexWrap="wrap">
-          <Chip
-            icon={<Circle sx={{ fontSize: "8px !important", color: "#10b981 !important" }} />}
-            label="Sistema Activo"
-            size="small"
-            sx={{
-              bgcolor: "#ecfdf5",
-              color: "#065f46",
-              fontWeight: 600,
-              fontSize: "0.72rem",
-              borderRadius: 1.5,
-              border: "1px solid #a7f3d0",
-            }}
-          />
-          <Typography
-            variant="caption"
-            color="#64748b"
-            sx={{ textTransform: "capitalize", fontWeight: 500 }}
-          >
-            {formattedDate}
-          </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => router.push("/admin/orders")}
-            endIcon={<ArrowForwardOutlined sx={{ fontSize: 16 }} />}
-            sx={{
-              bgcolor: "#0f172a",
-              color: "#ffffff",
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: 2,
-              px: 2,
-              py: 0.8,
-              boxShadow: "none",
-              "&:hover": { bgcolor: "#1e293b", boxShadow: "none" },
-            }}
-          >
-            Ver Órdenes
-          </Button>
-        </Stack>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => router.push("/admin/orders")}
+          endIcon={<ArrowForwardOutlined sx={{ fontSize: 15 }} />}
+          sx={{
+            bgcolor: "#111827",
+            color: "#fff",
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: "0.82rem",
+            borderRadius: 1.5,
+            px: 2,
+            boxShadow: "none",
+            "&:hover": { bgcolor: "#1f2937", boxShadow: "none" },
+          }}
+        >
+          Ver órdenes
+        </Button>
       </Stack>
 
-      <Stack direction={{ xs: "column", lg: "row" }} gap={3} mb={3.5}>
+      <Stack direction={{ xs: "column", lg: "row" }} gap={2.5} mb={3}>
         <Paper
           elevation={0}
           sx={{
-            flex: { xs: "none", lg: "0 0 42%" },
-            p: { xs: 3, md: 3.5 },
-            borderRadius: 3,
-            bgcolor: "#0f172a",
-            color: "#ffffff",
-            position: "relative",
-            overflow: "hidden",
-            boxShadow: "0 10px 30px -10px rgba(15, 23, 42, 0.4)",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
+            flex: { xs: "none", lg: "0 0 40%" },
+            p: 3,
+            borderRadius: 2,
+            bgcolor: "#111827",
+            color: "#fff",
+            border: "1px solid #1f2937",
           }}
         >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -80,
-              right: -80,
-              width: 220,
-              height: 220,
-              borderRadius: "50%",
-              bgcolor: "rgba(56, 189, 248, 0.12)",
-              filter: "blur(60px)",
-              pointerEvents: "none",
-            }}
-          />
-
-          <Box sx={{ position: "relative", zIndex: 1 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Box
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 1.5,
-                    bgcolor: "rgba(255,255,255,0.08)",
-                    display: "grid",
-                    placeItems: "center",
-                    color: "#38bdf8",
-                  }}
-                >
-                  <AccountBalanceWalletOutlined sx={{ fontSize: 18 }} />
-                </Box>
-                <Typography
-                  variant="caption"
-                  fontWeight={700}
-                  letterSpacing={1.2}
-                  sx={{ color: "rgba(255,255,255,0.6)", textTransform: "uppercase", fontSize: "0.68rem" }}
-                >
-                  INGRESOS CONFIRMADOS
-                </Typography>
-              </Stack>
-              <Chip
-                label="Stripe Verified"
-                size="small"
-                sx={{
-                  bgcolor: "rgba(56, 189, 248, 0.15)",
-                  color: "#38bdf8",
-                  fontWeight: 600,
-                  fontSize: "0.65rem",
-                  border: "1px solid rgba(56, 189, 248, 0.3)",
-                }}
-              />
-            </Stack>
-
-            <Typography
-              sx={{
-                fontWeight: 900,
-                fontSize: { xs: "2.4rem", md: "3.2rem" },
-                letterSpacing: -1.5,
-                lineHeight: 1,
-                color: "#ffffff",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              <Val loading={isLoading}>${toCurrency(revenue)}</Val>
+          <Stack direction="row" alignItems="center" gap={1} mb={3}>
+            <AccountBalanceWalletOutlined sx={{ fontSize: 17, color: "#a5b4fc" }} />
+            <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.8 }}>
+              Ingresos confirmados
             </Typography>
+          </Stack>
 
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", mt: 1, display: "block" }}>
-              Total recaudado de órdenes en estado completado
-            </Typography>
-          </Box>
-
-          <Box
+          <Typography
             sx={{
-              position: "relative",
-              zIndex: 1,
-              mt: 4,
-              pt: 2.5,
-              borderTop: "1px solid rgba(255,255,255,0.1)",
+              fontSize: { xs: "2.2rem", md: "2.8rem" },
+              fontWeight: 800,
+              letterSpacing: -1,
+              lineHeight: 1,
+              color: "#f9fafb",
             }}
           >
-            <Stack direction="row" justifyContent="space-between">
-              <Box>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", display: "block" }}>
-                  Ticket Promedio
-                </Typography>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: "white" }}>
-                  <Val loading={isLoading}>${toCurrency(averageTicket)}</Val>
-                </Typography>
-              </Box>
-              <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
-              <Box>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", display: "block" }}>
-                  Tasa Conversión
-                </Typography>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: "#34d399" }}>
-                  <Val loading={isLoading}>{conversionRate}%</Val>
-                </Typography>
-              </Box>
-              <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
-              <Box>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", display: "block" }}>
-                  Órdenes Totales
-                </Typography>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: "white" }}>
-                  <Val loading={isLoading}>{total}</Val>
-                </Typography>
-              </Box>
-            </Stack>
-          </Box>
+            <Val loading={isLoading}>${toCurrency(revenue)}</Val>
+          </Typography>
+          <Typography sx={{ fontSize: "0.78rem", color: "#6b7280", mt: 1 }}>
+            Total de órdenes completadas
+          </Typography>
+
+          <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", my: 2.5 }} />
+
+          <Stack direction="row" justifyContent="space-between">
+            <Box>
+              <Typography sx={{ fontSize: "0.72rem", color: "#6b7280" }}>Ticket promedio</Typography>
+              <Typography sx={{ fontWeight: 700, color: "#f9fafb", mt: 0.25 }}>
+                <Val loading={isLoading}>${toCurrency(averageTicket)}</Val>
+              </Typography>
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: "0.72rem", color: "#6b7280" }}>Tasa de conversión</Typography>
+              <Typography sx={{ fontWeight: 700, color: "#86efac", mt: 0.25 }}>
+                <Val loading={isLoading}>{conversionRate}%</Val>
+              </Typography>
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: "0.72rem", color: "#6b7280" }}>Total órdenes</Typography>
+              <Typography sx={{ fontWeight: 700, color: "#f9fafb", mt: 0.25 }}>
+                <Val loading={isLoading}>{total}</Val>
+              </Typography>
+            </Box>
+          </Stack>
         </Paper>
 
-        <Stack direction={{ xs: "column", sm: "row" }} gap={2.5} flex={1}>
+        <Stack direction={{ xs: "column", sm: "row" }} gap={2} flex={1}>
           <StatCard
             title="Completadas"
             value={completed}
-            description="Órdenes pagadas y despachadas"
-            badgeText="Éxito"
-            icon={<CheckCircleOutline sx={{ fontSize: 22 }} />}
-            iconBg="#ecfdf5"
-            iconColor="#10b981"
+            description="Pagadas y despachadas"
+            badge="Éxito"
+            icon={<CheckCircleOutline sx={{ fontSize: 20 }} />}
+            iconBg="#f0fdf4"
+            iconColor="#16a34a"
             loading={isLoading}
           />
           <StatCard
             title="Pendientes"
             value={pending}
-            description="En espera de pago o confirmación"
-            badgeText="En curso"
-            icon={<PendingOutlined sx={{ fontSize: 22 }} />}
-            iconBg="#fffbeb"
-            iconColor="#f59e0b"
+            description="En espera de confirmación"
+            badge="En curso"
+            icon={<PendingOutlined sx={{ fontSize: 20 }} />}
+            iconBg="#fefce8"
+            iconColor="#ca8a04"
             loading={isLoading}
           />
           <StatCard
             title="Canceladas"
             value={cancelled}
-            description="Expiradas o pago rechazado"
-            badgeText="Inactivas"
-            icon={<CancelOutlined sx={{ fontSize: 22 }} />}
-            iconBg="#fff1f2"
-            iconColor="#ef4444"
+            description="Expiradas o rechazadas"
+            badge="Inactivas"
+            icon={<CancelOutlined sx={{ fontSize: 20 }} />}
+            iconBg="#fef2f2"
+            iconColor="#dc2626"
             loading={isLoading}
           />
         </Stack>
@@ -431,44 +332,26 @@ export default function AdminDashboard() {
       <Paper
         elevation={0}
         sx={{
-          borderRadius: 3,
-          border: "1px solid",
-          borderColor: "#e2e8f0",
-          bgcolor: "#ffffff",
+          borderRadius: 2,
+          border: "1px solid #e5e7eb",
+          bgcolor: "#fff",
           overflow: "hidden",
-          boxShadow: "0 4px 20px -4px rgba(15, 23, 42, 0.05)",
         }}
       >
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{
-            px: 3.5,
-            py: 2.5,
-            borderBottom: "1px solid #f1f5f9",
-          }}
+          sx={{ px: 3, py: 2, borderBottom: "1px solid #f3f4f6" }}
         >
           <Stack direction="row" alignItems="center" gap={1.5}>
-            <Box
-              sx={{
-                width: 34,
-                height: 34,
-                borderRadius: 1.5,
-                bgcolor: "#f1f5f9",
-                color: "#475569",
-                display: "grid",
-                placeItems: "center",
-              }}
-            >
-              <ReceiptLongOutlined sx={{ fontSize: 18 }} />
-            </Box>
+            <ReceiptLongOutlined sx={{ fontSize: 18, color: "#9ca3af" }} />
             <Box>
-              <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
-                Actividad de Órdenes Recientes
+              <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#111827" }}>
+                Órdenes recientes
               </Typography>
-              <Typography variant="caption" color="#64748b">
-                Mostrando las últimas {Math.min(recentOrders.length, 10)} transacciones registradas
+              <Typography sx={{ fontSize: "0.75rem", color: "#9ca3af" }}>
+                Últimas {Math.min(recentOrders.length, 10)} transacciones
               </Typography>
             </Box>
           </Stack>
@@ -476,173 +359,93 @@ export default function AdminDashboard() {
           <Button
             size="small"
             onClick={() => router.push("/admin/orders")}
-            endIcon={<ArrowForwardOutlined sx={{ fontSize: 14 }} />}
+            endIcon={<ArrowForwardOutlined sx={{ fontSize: 13 }} />}
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              fontSize: "0.82rem",
-              color: "#3b82f6",
-              "&:hover": { bgcolor: "#eff6ff" },
+              fontSize: "0.78rem",
+              color: "#6366f1",
+              "&:hover": { bgcolor: "#eef2ff" },
             }}
           >
-            Ver catálogo completo
+            Ver todas
           </Button>
         </Stack>
 
         <TableContainer>
           <Table sx={{ minWidth: 650 }}>
-            <TableHead sx={{ bgcolor: "#f8fafc" }}>
+            <TableHead sx={{ bgcolor: "#f9fafb" }}>
               <TableRow>
-                <TableCell sx={{ color: "#64748b", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", py: 1.5, pl: 3.5 }}>
-                  Identificador
-                </TableCell>
-                <TableCell sx={{ color: "#64748b", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", py: 1.5 }}>
-                  Cliente / Correo
-                </TableCell>
-                <TableCell sx={{ color: "#64748b", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", py: 1.5 }}>
-                  Fecha y Hora
-                </TableCell>
-                <TableCell sx={{ color: "#64748b", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", py: 1.5 }}>
-                  Estado
-                </TableCell>
-                <TableCell align="right" sx={{ color: "#64748b", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", py: 1.5, pr: 3.5 }}>
-                  Total Cobrado
-                </TableCell>
+                {["Identificador", "Cliente", "Fecha", "Estado", "Total"].map((h, i) => (
+                  <TableCell
+                    key={h}
+                    align={i === 4 ? "right" : "left"}
+                    sx={{
+                      color: "#6b7280",
+                      fontWeight: 700,
+                      fontSize: "0.68rem",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                      py: 1.5,
+                      pl: i === 0 ? 3 : undefined,
+                      pr: i === 4 ? 3 : undefined,
+                    }}
+                  >
+                    {h}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} sx={{ py: 6, textAlign: "center", color: "#94a3b8" }}>
-                    Cargando transacciones recientes...
+                  <TableCell colSpan={5} sx={{ py: 6, textAlign: "center", color: "#9ca3af", fontSize: "0.85rem" }}>
+                    Cargando transacciones...
                   </TableCell>
                 </TableRow>
               ) : recentOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} sx={{ py: 6, textAlign: "center", color: "#94a3b8" }}>
-                    No se registran transacciones recientes en el sistema.
+                  <TableCell colSpan={5} sx={{ py: 6, textAlign: "center", color: "#9ca3af", fontSize: "0.85rem" }}>
+                    No hay transacciones recientes.
                   </TableCell>
                 </TableRow>
               ) : (
-                recentOrders.map((order) => {
-                  const statusKey = order.status.toLowerCase();
-                  const cfg = STATUS_CONFIG[statusKey] ?? {
-                    label: order.status,
-                    bg: "#f1f5f9",
-                    text: "#475569",
-                    border: "#cbd5e1",
-                    dot: "#64748b",
-                  };
-
-                  return (
-                    <TableRow
-                      key={order.orderId}
-                      sx={{
-                        "&:hover": { bgcolor: "#f8fafc" },
-                        transition: "background 0.15s",
-                      }}
-                    >
-                      <TableCell sx={{ pl: 3.5, py: 2 }}>
-                        <Chip
-                          label={`#${order.orderId.split("-")[0].toUpperCase()}`}
-                          size="small"
-                          sx={{
-                            fontFamily: "monospace",
-                            fontWeight: 700,
-                            fontSize: "0.72rem",
-                            bgcolor: "#f1f5f9",
-                            color: "#334155",
-                            borderRadius: 1.5,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ py: 2 }}>
-                        <Typography variant="body2" fontWeight={600} color="#0f172a" fontSize="0.85rem">
-                          {order.email}
-                        </Typography>
-                        <Typography variant="caption" color="#94a3b8" fontSize="0.72rem">
-                          ID Usuario: {order.userId}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ py: 2, color: "#64748b", fontSize: "0.82rem" }}>
-                        {formatDate(order.createdAt as unknown as string)}
-                      </TableCell>
-                      <TableCell sx={{ py: 2 }}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          gap={0.75}
-                          sx={{
-                            display: "inline-flex",
-                            px: 1.25,
-                            py: 0.4,
-                            borderRadius: 1.5,
-                            bgcolor: cfg.bg,
-                            border: `1px solid ${cfg.border}`,
-                          }}
-                        >
-                          <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: cfg.dot }} />
-                          <Typography
-                            variant="caption"
-                            sx={{ color: cfg.text, fontWeight: 700, fontSize: "0.72rem" }}
-                          >
-                            {cfg.label}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
-                      <TableCell align="right" sx={{ pr: 3.5, py: 2 }}>
-                        <Typography
-                          variant="body2"
-                          fontWeight={800}
-                          color="#0f172a"
-                          sx={{ fontVariantNumeric: "tabular-nums" }}
-                        >
-                          ${toCurrency(toNumber(order.totalAmount))}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                recentOrders.map((order) => (
+                  <TableRow
+                    key={order.orderId}
+                    sx={{ "&:hover": { bgcolor: "#f9fafb" }, transition: "background 0.1s" }}
+                  >
+                    <TableCell sx={{ pl: 3, py: 1.75 }}>
+                      <Typography sx={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.78rem", color: "#374151" }}>
+                        #{order.orderId.split("-")[0].toUpperCase()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ py: 1.75 }}>
+                      <Typography sx={{ fontSize: "0.84rem", fontWeight: 600, color: "#111827" }}>
+                        {order.email}
+                      </Typography>
+                      <Typography sx={{ fontSize: "0.7rem", color: "#9ca3af" }}>
+                        ID: {order.userId}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ py: 1.75, fontSize: "0.82rem", color: "#6b7280" }}>
+                      {formatDate(order.createdAt as unknown as string)}
+                    </TableCell>
+                    <TableCell sx={{ py: 1.75 }}>
+                      <StatusBadge status={order.status} />
+                    </TableCell>
+                    <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
+                      <Typography sx={{ fontSize: "0.84rem", fontWeight: 700, color: "#111827" }}>
+                        ${toCurrency(toNumber(order.totalAmount))}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
         </TableContainer>
       </Paper>
-
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        justifyContent="space-between"
-        alignItems="center"
-        mt={4}
-        pt={2.5}
-        borderTop="1px solid #e2e8f0"
-        gap={1.5}
-      >
-        <Typography variant="caption" color="#94a3b8">
-          Minimarket E-Commerce Platform • Core Engine v4.0
-        </Typography>
-
-        <Stack direction="row" alignItems="center" gap={2}>
-          <Stack direction="row" alignItems="center" gap={0.5}>
-            <Circle sx={{ fontSize: 7, color: "#10b981" }} />
-            <Typography variant="caption" color="#64748b" fontWeight={500}>
-              MySQL Relational Engine
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" gap={0.5}>
-            <Circle sx={{ fontSize: 7, color: "#10b981" }} />
-            <Typography variant="caption" color="#64748b" fontWeight={500}>
-              Elasticsearch 9.2
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" gap={0.5}>
-            <Circle sx={{ fontSize: 7, color: "#10b981" }} />
-            <Typography variant="caption" color="#64748b" fontWeight={500}>
-              Stripe Payments API
-            </Typography>
-          </Stack>
-        </Stack>
-      </Stack>
     </Box>
   );
 }

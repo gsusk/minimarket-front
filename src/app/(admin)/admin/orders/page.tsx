@@ -17,79 +17,31 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Paper,
 } from "@mui/material";
-import { SearchOutlined, ReceiptLongOutlined, LocalShippingOutlined, PaidOutlined } from "@mui/icons-material";
+import { SearchOutlined } from "@mui/icons-material";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminGetAllOrders } from "../../../api/admin";
 import { toCurrency, toNumber, formatDate } from "../../../utils/format";
 
-const MARKET_GREEN = "#0f9f75";
-const MARKET_INK = "#14211c";
-const MARKET_GOLD = "#f4b942";
+// ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_COLOR: Record<string, "default" | "warning" | "success" | "error" | "info"> = {
-  completed: "success",
-  pending: "warning",
-  cancelled: "error",
+  completed:  "success",
+  pending:    "warning",
+  cancelled:  "error",
   processing: "info",
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  completed: "Completada",
-  pending: "Pendiente",
-  cancelled: "Cancelada",
+  completed:  "Completada",
+  pending:    "Pendiente",
+  cancelled:  "Cancelada",
   processing: "En proceso",
 };
 
-function SummaryPill({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      gap={1.25}
-      sx={{
-        px: 1.5,
-        py: 1.15,
-        borderRadius: 2,
-        bgcolor: "rgba(255,255,255,0.78)",
-        border: "1px solid rgba(20,33,28,0.08)",
-        minWidth: { xs: "100%", sm: 170 },
-      }}
-    >
-      <Box
-        sx={{
-          width: 34,
-          height: 34,
-          borderRadius: 1.5,
-          display: "grid",
-          placeItems: "center",
-          color: MARKET_INK,
-          bgcolor: "rgba(244,185,66,0.38)",
-          "& svg": { fontSize: 18 },
-        }}
-      >
-        {icon}
-      </Box>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ display: "block", lineHeight: 1 }}>
-          {label}
-        </Typography>
-        <Typography variant="body2" fontWeight={900} color={MARKET_INK} noWrap>
-          {value}
-        </Typography>
-      </Box>
-    </Stack>
-  );
-}
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
@@ -111,73 +63,67 @@ export default function AdminOrdersPage() {
     });
   }, [orders, search, statusFilter]);
 
-  const completedCount = orders.filter((o) => o.status.toLowerCase() === "completed").length;
-  const pendingCount = orders.filter((o) => o.status.toLowerCase() === "pending").length;
+  const completedCount   = orders.filter((o) => o.status.toLowerCase() === "completed").length;
+  const pendingCount     = orders.filter((o) => o.status.toLowerCase() === "pending").length;
   const completedRevenue = orders
     .filter((o) => o.status.toLowerCase() === "completed")
-    .reduce((sum, order) => sum + toNumber(order.totalAmount), 0);
+    .reduce((sum, o) => sum + toNumber(o.totalAmount), 0);
 
   return (
     <Box sx={{ maxWidth: 1120, mx: "auto" }}>
-      <Box
-        sx={{
-          mb: 3,
-          p: { xs: 2.5, md: 3 },
-          borderRadius: 2.5,
-          color: "white",
-          bgcolor: MARKET_INK,
-          overflow: "hidden",
-          position: "relative",
-          boxShadow: "0 24px 64px rgba(20,33,28,0.18)",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            pointerEvents: "none",
-            backgroundImage:
-              "linear-gradient(135deg, rgba(244,185,66,0.2), transparent 36%), radial-gradient(circle at 86% 30%, rgba(15,159,117,0.42), transparent 28%)",
-          }}
-        />
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          justifyContent="space-between"
-          alignItems={{ md: "flex-end" }}
-          gap={3}
-          sx={{ position: "relative", zIndex: 1 }}
-        >
-          <Box>
-            <Typography variant="caption" fontWeight={800} letterSpacing={1.1} sx={{ color: MARKET_GOLD, textTransform: "uppercase" }}>
-              Pedidos y recaudo
-            </Typography>
-            <Typography variant="h4" fontWeight={950} letterSpacing={-1.5} lineHeight={1.1} mt={0.75}>
-              Órdenes
-            </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.58)", mt: 1, maxWidth: 520 }}>
-              Revisa clientes, estados, fechas y valores sin perder el contexto de la operación.
-            </Typography>
-          </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} gap={1.25} sx={{ width: { xs: "100%", md: "auto" } }}>
-            <SummaryPill icon={<ReceiptLongOutlined />} label="Total" value={`${orders.length} órdenes`} />
-            <SummaryPill icon={<LocalShippingOutlined />} label="Pendientes" value={`${pendingCount}`} />
-            <SummaryPill icon={<PaidOutlined />} label="Confirmado" value={`$${toCurrency(completedRevenue)}`} />
-          </Stack>
-        </Stack>
-      </Box>
-
+      {/* ── Page header ── */}
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        gap={1.5}
-        mb={2}
-        sx={{
-          p: 1.25,
-          borderRadius: 2.5,
-          bgcolor: "rgba(255,255,255,0.78)",
-          border: "1px solid rgba(20,33,28,0.08)",
-          boxShadow: "0 14px 36px rgba(20,33,28,0.05)",
-        }}
+        direction={{ xs: "column", md: "row" }}
+        justifyContent="space-between"
+        alignItems={{ md: "flex-end" }}
+        mb={3}
+        gap={2}
       >
+        <Box>
+          <Typography
+            sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: 1 }}
+          >
+            Gestión
+          </Typography>
+          <Typography sx={{ fontSize: "1.6rem", fontWeight: 800, color: "#111827", mt: 0.25 }}>
+            Órdenes
+          </Typography>
+          <Typography sx={{ fontSize: "0.85rem", color: "#6b7280", mt: 0.5 }}>
+            Revisa clientes, estados, fechas y montos de cada transacción.
+          </Typography>
+        </Box>
+
+        {/* Summary pills */}
+        <Stack direction="row" gap={2} flexWrap="wrap">
+          {[
+            { label: "Total", value: `${orders.length}` },
+            { label: "Pendientes", value: `${pendingCount}` },
+            { label: "Recaudado", value: `$${toCurrency(completedRevenue)}` },
+          ].map(({ label, value }) => (
+            <Box
+              key={label}
+              sx={{
+                px: 2,
+                py: 1,
+                borderRadius: 1.5,
+                border: "1px solid #e5e7eb",
+                bgcolor: "#fff",
+                minWidth: 100,
+              }}
+            >
+              <Typography sx={{ fontSize: "0.68rem", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                {label}
+              </Typography>
+              <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: "#111827", mt: 0.25 }}>
+                {value}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+      </Stack>
+
+      {/* ── Filters ── */}
+      <Stack direction={{ xs: "column", sm: "row" }} gap={1.5} mb={2.5}>
         <TextField
           placeholder="Buscar por email o ID..."
           size="small"
@@ -185,15 +131,12 @@ export default function AdminOrdersPage() {
           onChange={(e) => setSearch(e.target.value)}
           sx={{
             flex: 1,
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-              bgcolor: "white",
-            },
+            "& .MuiOutlinedInput-root": { borderRadius: 1.5, bgcolor: "white" },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchOutlined sx={{ fontSize: 18, color: MARKET_GREEN }} />
+                <SearchOutlined sx={{ fontSize: 17, color: "#9ca3af" }} />
               </InputAdornment>
             ),
           }}
@@ -204,7 +147,7 @@ export default function AdminOrdersPage() {
             label="Estado"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ borderRadius: 2, bgcolor: "white" }}
+            sx={{ borderRadius: 1.5, bgcolor: "white" }}
           >
             <MenuItem value="all">Todos</MenuItem>
             <MenuItem value="pending">Pendiente</MenuItem>
@@ -215,33 +158,38 @@ export default function AdminOrdersPage() {
         </FormControl>
       </Stack>
 
-      <Box
+      {/* ── Table ── */}
+      <Paper
+        elevation={0}
         sx={{
-          borderRadius: 2.5,
-          border: "1px solid rgba(20,33,28,0.09)",
-          bgcolor: "rgba(255,255,255,0.9)",
+          borderRadius: 2,
+          border: "1px solid #e5e7eb",
+          bgcolor: "#fff",
           overflow: "hidden",
-          boxShadow: "0 22px 54px rgba(20,33,28,0.07)",
         }}
       >
-        <Box sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(20,33,28,0.08)", bgcolor: "rgba(255,255,255,0.72)" }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="caption" fontWeight={800} color="text.disabled" letterSpacing={0.8} sx={{ textTransform: "uppercase", fontSize: "0.62rem" }}>
-              {filtered.length} {filtered.length === 1 ? "orden" : "ordenes"}
-            </Typography>
-            <Typography variant="caption" color="text.disabled">
-              {completedCount} completadas
-            </Typography>
-          </Stack>
-        </Box>
+        {/* Table meta row */}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ px: 3, py: 1.75, borderBottom: "1px solid #f3f4f6" }}
+        >
+          <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.5 }}>
+            {filtered.length} {filtered.length === 1 ? "orden" : "órdenes"}
+          </Typography>
+          <Typography sx={{ fontSize: "0.72rem", color: "#9ca3af" }}>
+            {completedCount} completadas
+          </Typography>
+        </Stack>
 
         {isLoading ? (
-          <Box sx={{ px: 3, py: 5, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">Cargando ordenes...</Typography>
+          <Box sx={{ px: 3, py: 6, textAlign: "center" }}>
+            <Typography sx={{ fontSize: "0.85rem", color: "#9ca3af" }}>Cargando órdenes...</Typography>
           </Box>
         ) : filtered.length === 0 ? (
-          <Box sx={{ px: 3, py: 5, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">Sin resultados para los filtros aplicados.</Typography>
+          <Box sx={{ px: 3, py: 6, textAlign: "center" }}>
+            <Typography sx={{ fontSize: "0.85rem", color: "#9ca3af" }}>Sin resultados para los filtros aplicados.</Typography>
           </Box>
         ) : (
           <TableContainer>
@@ -250,13 +198,13 @@ export default function AdminOrdersPage() {
                 <TableRow
                   sx={{
                     "& th": {
-                      borderBottomColor: "rgba(20,33,28,0.08)",
-                      color: "text.disabled",
+                      bgcolor: "#f9fafb",
+                      borderBottomColor: "#e5e7eb",
+                      color: "#6b7280",
                       fontSize: "0.68rem",
-                      fontWeight: 800,
-                      letterSpacing: 0.8,
+                      fontWeight: 700,
+                      letterSpacing: 0.5,
                       textTransform: "uppercase",
-                      bgcolor: "rgba(246,244,238,0.7)",
                     },
                   }}
                 >
@@ -276,30 +224,32 @@ export default function AdminOrdersPage() {
                       key={order.orderId}
                       hover
                       sx={{
-                        "& td": { borderBottomColor: "rgba(20,33,28,0.06)", py: 2 },
+                        "& td": { borderBottomColor: "#f3f4f6", py: 1.75 },
                         "&:last-child td": { borderBottom: 0 },
                       }}
                     >
                       <TableCell>
-                        <Typography variant="body2" fontWeight={900} fontFamily="monospace" fontSize="0.8rem" color={MARKET_INK}>
+                        <Typography
+                          sx={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.8rem", color: "#111827" }}
+                        >
                           #{order.orderId.split("-")[0].toUpperCase()}
                         </Typography>
-                        <Typography variant="caption" color="text.disabled" fontFamily="monospace">
+                        <Typography sx={{ fontSize: "0.7rem", color: "#9ca3af", fontFamily: "monospace" }}>
                           {order.orderId.slice(0, 18)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={700} color={MARKET_INK}>
+                        <Typography sx={{ fontSize: "0.84rem", fontWeight: 600, color: "#111827" }}>
                           {order.email}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography sx={{ fontSize: "0.82rem", color: "#6b7280" }}>
                           {formatDate(order.createdAt as unknown as string)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={800}>
+                        <Typography sx={{ fontSize: "0.84rem", fontWeight: 600, color: "#374151" }}>
                           {order.items?.length ?? 0}
                         </Typography>
                       </TableCell>
@@ -308,11 +258,11 @@ export default function AdminOrdersPage() {
                           label={STATUS_LABEL[status] ?? order.status}
                           color={STATUS_COLOR[status] ?? "default"}
                           size="small"
-                          sx={{ fontWeight: 800, fontSize: "0.68rem", height: 24, borderRadius: 1.5 }}
+                          sx={{ fontWeight: 700, fontSize: "0.68rem", height: 22, borderRadius: 1 }}
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" fontWeight={950} color={MARKET_INK}>
+                        <Typography sx={{ fontSize: "0.84rem", fontWeight: 700, color: "#111827" }}>
                           ${toCurrency(toNumber(order.totalAmount))}
                         </Typography>
                       </TableCell>
@@ -323,7 +273,7 @@ export default function AdminOrdersPage() {
             </Table>
           </TableContainer>
         )}
-      </Box>
+      </Paper>
     </Box>
   );
 }
